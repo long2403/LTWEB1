@@ -1,35 +1,38 @@
 package com.example.lab1.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "students")
 public class Student {
 
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ⭐ BẮT BUỘC
+    private Integer id;
 
+    @Column(name = "name")
     private String name;
-    private int age;
+
+    @Column(name = "email")
     private String email;
 
+    // ✅ Constructor rỗng (BẮT BUỘC cho JPA)
     public Student() {
     }
 
-    public Student(int id, String name, int age, String email) {
-        this.id = id;
+    // ✅ Constructor KHÔNG CÓ id
+    public Student(String name, String email) {
         this.name = name;
-        this.age = age;
         this.email = email;
     }
 
-    public int getId() {
+    // ===== getter & setter =====
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    // ❌ KHÔNG setId khi thêm mới (Hibernate tự lo)
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -39,14 +42,6 @@ public class Student {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
     }
 
     public String getEmail() {
