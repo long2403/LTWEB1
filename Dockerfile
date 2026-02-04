@@ -1,25 +1,32 @@
-# ===== Build stage =====
+# ======================
+# STAGE 1: Build
+# ======================
 FROM maven:3.9.6-eclipse-temurin-17 AS build
-WORKDIR /app
+
+WORKDIR /build
 
 # Copy pom.xml trước để cache dependency
-COPY pom.xml .
+COPY lab1/pom.xml ./pom.xml
 RUN mvn dependency:go-offline
 
-# Copy source
-COPY src ./src
+# Copy source code
+COPY lab1/src ./src
 
 # Build jar
 RUN mvn clean package -DskipTests
 
-# ===== Run stage =====
+
+# ======================
+# STAGE 2: Run
+# ======================
 FROM eclipse-temurin:17-jre
+
 WORKDIR /app
 
-# Copy jar từ build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy jar từ stage build
+COPY --from=build /build/target/*.jar app.jar
 
-# Expose port Render dùng
+# Render dùng PORT động
 EXPOSE 8080
 
 # Run app
