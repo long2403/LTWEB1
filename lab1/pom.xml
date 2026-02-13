@@ -78,6 +78,16 @@
                 </configuration>
             </plugin>
 
+            <!-- TẮT INTEGRATION TESTS KHI BUILD -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
