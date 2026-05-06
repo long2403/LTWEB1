@@ -14,40 +14,46 @@ public class DatabaseConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
-        String databaseUrl = System.getenv("DATABASE_URL");
+        String dbUrl = System.getenv("DATABASE_URL");
 
-        // Local fallback
-        if (databaseUrl == null || databaseUrl.isEmpty()) {
+        if (dbUrl == null || dbUrl.trim().isEmpty()) {
+            // Local development
+            System.out.println("=== Using Local PostgreSQL ===");
             return DataSourceBuilder.create()
-                    .url("jdbc:postgresql://localhost:5432/lab1")
-                    .username("postgres")
-                    .password("postgres")
-                    .build();
+                .url("jdbc:postgresql://localhost:5432/lab1")
+                .username("postgres")
+                .password("postgres")
+                .build();
         }
 
         // Render PostgreSQL
         try {
-            URI uri = new URI(databaseUrl);
-            String username = uri.getUserInfo().split(":")[0];
-            String password = uri.getUserInfo().split(":")[1];
+            URI uri = new URI(dbUrl);
+            String userInfo = uri.getUserInfo();
+            String username = userInfo.split(":")[0];
+            String password = userInfo.split(":")[1];
             String host = uri.getHost();
-            String port = String.valueOf(uri.getPort());
-            String dbName = uri.getPath().substring(1);
+            int port = uri.getPort();
+            String database = uri.getPath().substring(1);
 
-            // JDBC URL với SSL (BẮT BUỘC với Render Postgres)
             String jdbcUrl = String.format(
-                "jdbc:postgresql://%s:%s/%s?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
-                host, port, dbName
+                "jdbc:postgresql://%s:%d/%s?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
+                host, port, database
             );
+
+            System.out.println("=== Connecting to Render Postgres ===");
+            System.out.println("Host: " + host);
+            System.out.println("Database: " + database);
 
             return DataSourceBuilder.create()
                     .url(jdbcUrl)
                     .username(username)
                     .password(password)
+                    .driverClassName("org.postgresql.Driver")
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse DATABASE_URL from Render", e);
+            throw new RuntimeException("Failed to configure Render DATABASE_URL", e);
         }
     }
 }
