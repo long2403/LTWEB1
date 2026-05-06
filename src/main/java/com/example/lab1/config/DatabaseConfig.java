@@ -17,21 +17,30 @@ public class DatabaseConfig {
         String databaseUrl = System.getenv("DATABASE_URL");
 
         if (databaseUrl == null || databaseUrl.isBlank()) {
-            throw new RuntimeException("DATABASE_URL environment variable is not set!");
+            throw new RuntimeException("❌ DATABASE_URL environment variable is missing!");
         }
 
         try {
             URI uri = new URI(databaseUrl);
-            String username = uri.getUserInfo().split(":")[0];
-            String password = uri.getUserInfo().split(":")[1];
+            String userInfo = uri.getUserInfo();
+            String username = userInfo.split(":")[0];
+            String password = userInfo.split(":")[1];
             String host = uri.getHost();
-            String port = String.valueOf(uri.getPort());
             String dbName = uri.getPath().substring(1);
 
-            String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName 
-                           + "?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
+            // Fix port (Render thường không có port rõ ràng → mặc định 5432)
+            int port = uri.getPort();
+            if (port <= 0) port = 5432;
 
-            System.out.println("✅ Connected to Render Postgres: " + dbName);
+            String jdbcUrl = String.format(
+                "jdbc:postgresql://%s:%d/%s?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
+                host, port, dbName
+            );
+
+            System.out.println("✅ Successfully parsed Render DATABASE_URL");
+            System.out.println("Host: " + host);
+            System.out.println("Port: " + port);
+            System.out.println("Database: " + dbName);
 
             return DataSourceBuilder.create()
                     .url(jdbcUrl)
@@ -41,7 +50,8 @@ public class DatabaseConfig {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse DATABASE_URL", e);
+            System.err.println("❌ Failed to parse DATABASE_URL: " + e.getMessage());
+            throw new RuntimeException("Database configuration failed", e);
         }
     }
 }
