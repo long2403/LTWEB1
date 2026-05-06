@@ -1,32 +1,49 @@
 package com.example.lab1.config;
 
-import javax.sql.DataSource;
-
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Primary;
+
+import javax.sql.DataSource;
+import java.net.URI;
 
 @Configuration
 public class DatabaseConfig {
 
     @Bean
-    @ConfigurationProperties("spring.datasource")
-    public DataSourceProperties dataSourceProperties() {
-        return new DataSourceProperties();
-    }
+    @Primary
+    public DataSource dataSource() {
+        String databaseUrl = System.getenv("DATABASE_URL");
 
-    @Bean
-    public DataSource dataSource(DataSourceProperties properties, Environment env) {
-        String url = properties.getUrl();
-        if (url == null || url.isBlank()) {
-            url = env.getProperty("DATABASE_URL");
+        // Local development fallback
+        if (databaseUrl == null || databaseUrl.isEmpty()) {
+            return DataSourceBuilder.create()
+                    .url("jdbc:postgresql://localhost:5432/lab1")  // thay tên DB local nếu khác
+                    .username("postgres")
+                    .password("postgres")
+                    .build();
         }
-        if (url != null && url.startsWith("postgres://")) {
-            url = url.replaceFirst("^postgres://", "jdbc:postgresql://");
+
+        // Render PostgreSQL
+        try {
+            URI uri = new URI(databaseUrl);
+            String username = uri.getUserInfo().split(":")[0];
+            String password = uri.getUserInfo().split(":")[1];
+            String host = uri.getHost();
+            String port = String.valueOf(uri.getPort());
+            String dbName = uri.getPath().substring(1);
+
+            String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s", host, port, dbName);
+
+            return DataSourceBuilder.create()
+                    .url(jdbcUrl)
+                    .username(username)
+                    .password(password)
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse DATABASE_URL", e);
         }
-        properties.setUrl(url);
-        return properties.initializeDataSourceBuilder().build();
     }
 }
