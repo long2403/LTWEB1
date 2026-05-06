@@ -16,10 +16,10 @@ public class DatabaseConfig {
     public DataSource dataSource() {
         String databaseUrl = System.getenv("DATABASE_URL");
 
-        // Local development fallback
+        // Local fallback
         if (databaseUrl == null || databaseUrl.isEmpty()) {
             return DataSourceBuilder.create()
-                    .url("jdbc:postgresql://localhost:5432/lab1")  // thay tên DB local nếu khác
+                    .url("jdbc:postgresql://localhost:5432/lab1")
                     .username("postgres")
                     .password("postgres")
                     .build();
@@ -34,7 +34,11 @@ public class DatabaseConfig {
             String port = String.valueOf(uri.getPort());
             String dbName = uri.getPath().substring(1);
 
-            String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s", host, port, dbName);
+            // JDBC URL với SSL (BẮT BUỘC với Render Postgres)
+            String jdbcUrl = String.format(
+                "jdbc:postgresql://%s:%s/%s?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
+                host, port, dbName
+            );
 
             return DataSourceBuilder.create()
                     .url(jdbcUrl)
@@ -43,7 +47,7 @@ public class DatabaseConfig {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse DATABASE_URL", e);
+            throw new RuntimeException("Failed to parse DATABASE_URL from Render", e);
         }
     }
 }
