@@ -21,10 +21,7 @@ public class WebController {
     // Hiển thị trang danh sách sinh viên
     @GetMapping("/")
     public String home(Model model) {
-        List<Student> students = service.getAll();
-        model.addAttribute("students", students);
-        model.addAttribute("student", new Student());
-        return "students";
+        return "redirect:/index.html";
     }
 
     // Hiển thị form thêm sinh viên (form trống)

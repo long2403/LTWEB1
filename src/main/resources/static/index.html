@@ -2,100 +2,139 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý sinh viên</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentHub | Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #17212b; --muted: #71808f; --line: #e6ebef; --paper: #f5f7f8; --white: #fff; --navy: #18324a; --teal: #16a085; --orange: #f2994a; --red: #d95d5d; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: var(--ink); background: var(--paper); font: 14px "DM Sans", sans-serif; }
+        button, input { font: inherit; }
+        button { cursor: pointer; border: 0; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 248px; padding: 28px 18px; color: #c9d5df; background: var(--navy); }
+        .brand { display: flex; align-items: center; gap: 11px; padding: 0 12px 42px; color: #fff; font: 700 21px "Space Grotesk", sans-serif; }
+        .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; color: var(--navy); background: #f5c267; border-radius: 9px; }
+        .nav-label { padding: 0 13px 11px; color: #7990a3; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .nav-item { display: flex; align-items: center; gap: 13px; width: 100%; margin: 4px 0; padding: 12px 13px; color: #b7c5d0; background: transparent; border-radius: 8px; text-align: left; }
+        .nav-item.active, .nav-item:hover { color: #fff; background: rgba(255,255,255,.1); }
+        .nav-icon { width: 20px; color: #85a8b9; text-align: center; font-size: 17px; }
+        .nav-item.active .nav-icon { color: #f5c267; }
+        .sidebar-note { margin: 42px 5px 0; padding: 17px; color: #d3e0e7; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; line-height: 1.5; }
+        .sidebar-note strong { display: block; margin-bottom: 5px; color: #fff; }
+        .main { flex: 1; min-width: 0; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; height: 79px; padding: 0 44px; background: var(--white); border-bottom: 1px solid var(--line); }
+        .crumb { color: var(--muted); font-size: 13px; }
+        .crumb b { color: var(--ink); }
+        .profile { display: flex; align-items: center; gap: 10px; }
+        .avatar { display: grid; place-items: center; width: 35px; height: 35px; color: #fff; background: #3d7781; border-radius: 50%; font-weight: 700; }
+        .profile small { display: block; color: var(--muted); font-size: 11px; }
+        .content { max-width: 1330px; margin: 0 auto; padding: 38px 44px 55px; }
+        .heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 28px; }
+        h1, h2, p { margin: 0; }
+        h1 { font: 700 30px "Space Grotesk", sans-serif; letter-spacing: -.03em; }
+        .heading p { margin-top: 7px; color: var(--muted); }
+        .primary { padding: 11px 17px; color: #fff; background: var(--teal); border-radius: 7px; font-weight: 700; box-shadow: 0 5px 12px rgba(22,160,133,.18); }
+        .primary:hover { background: #118b73; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 25px; }
+        .stat { padding: 20px 22px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+        .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; font-weight: 600; }
+        .stat-icon { display: grid; place-items: center; width: 34px; height: 34px; color: var(--teal); background: #e8f6f3; border-radius: 8px; font-size: 17px; }
+        .stat:nth-child(2) .stat-icon { color: var(--orange); background: #fff2e5; }
+        .stat:nth-child(3) .stat-icon { color: #6579b6; background: #edf0fb; }
+        .stat-number { margin-top: 14px; font: 700 29px "Space Grotesk", sans-serif; }
+        .workspace { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        .workspace-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 21px 24px; border-bottom: 1px solid var(--line); }
+        h2 { font: 700 18px "Space Grotesk", sans-serif; }
+        .workspace-head p { margin-top: 4px; color: var(--muted); font-size: 12px; }
+        .search { position: relative; width: min(285px, 100%); }
+        .search span { position: absolute; top: 10px; left: 12px; color: var(--muted); }
+        .search input { width: 100%; padding: 10px 12px 10px 35px; border: 1px solid var(--line); border-radius: 6px; outline: none; }
+        .search input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(22,160,133,.1); }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { padding: 15px 24px; text-align: left; border-bottom: 1px solid #edf0f2; }
+        th { color: var(--muted); background: #fbfcfc; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+        td { color: #3d4b57; }
+        td:first-child { color: var(--muted); font-weight: 600; }
+        .student-name { color: var(--ink); font-weight: 700; }
+        .email { color: var(--muted); }
+        .actions { display: flex; gap: 8px; }
+        .action { padding: 7px 10px; color: #557080; background: #f2f5f6; border-radius: 5px; font-size: 12px; font-weight: 700; }
+        .action:hover { background: #e5ecee; }
+        .action.delete { color: var(--red); background: #fff0f0; }
+        .empty, .loading { padding: 45px 20px; color: var(--muted); text-align: center; }
+        .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(17,31,43,.56); }
+        .modal-backdrop[hidden] { display: none; }
+        .modal { width: min(450px, 100%); padding: 28px; background: #fff; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+        .modal-head { display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px; }
+        .close { color: var(--muted); background: transparent; font-size: 22px; }
+        .field { display: block; margin-bottom: 17px; color: #465866; font-weight: 600; }
+        .field input { display: block; width: 100%; margin-top: 7px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 6px; outline: none; }
+        .field input:focus { border-color: var(--teal); }
+        .modal-actions { display: flex; justify-content: end; gap: 9px; margin-top: 25px; }
+        .secondary { padding: 10px 15px; color: #5a6a76; background: #edf1f3; border-radius: 6px; font-weight: 700; }
+        .error { margin-bottom: 14px; padding: 10px 12px; color: #a83d3d; background: #fff1f1; border-radius: 6px; }
+        .toast { position: fixed; right: 24px; bottom: 24px; padding: 13px 17px; color: #fff; background: #253944; border-radius: 7px; box-shadow: 0 8px 25px rgba(0,0,0,.15); }
+        .toast[hidden] { display: none; }
+        @media (max-width: 800px) { .sidebar { width: 70px; padding: 20px 10px; } .brand { padding: 0 8px 35px; } .brand-text, .nav-label, .nav-item span:not(.nav-icon), .sidebar-note, .profile div { display: none; } .nav-item { justify-content: center; padding: 13px 0; } .topbar { padding: 0 22px; } .content { padding: 28px 22px 40px; } }
+        @media (max-width: 560px) { .topbar { height: 66px; } .content { padding: 25px 14px 35px; } .heading { align-items: start; flex-direction: column; } h1 { font-size: 26px; } .stats { grid-template-columns: 1fr; gap: 10px; } .workspace-head { align-items: start; flex-direction: column; padding: 18px; } .search { width: 100%; } th, td { padding: 13px 15px; } }
+    </style>
 </head>
-<body class="container mt-4">
-
-<h3>DANH SÁCH SINH VIÊN</h3>
-
-<input type="text" id="search" class="form-control mb-3"
-       placeholder="Tìm theo tên..." onkeyup="searchStudent()">
-
-<table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Tên</th>
-        <th>Email</th>
-        <th>Hành động</th>
-    </tr>
-    </thead>
-    <tbody id="studentTable"></tbody>
-</table>
-
-<h4>Thêm sinh viên</h4>
-<input id="id" class="form-control mb-2" placeholder="ID">
-<input id="name" class="form-control mb-2" placeholder="Tên">
-<input id="email" class="form-control mb-2" placeholder="Email">
-
-<button class="btn btn-primary" onclick="addStudent()">Thêm</button>
-
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">S</span><span class="brand-text">StudentHub</span></div>
+        <div class="nav-label">Workspace</div>
+        <button class="nav-item active"><span class="nav-icon">⌂</span><span>Dashboard</span></button>
+        <button class="nav-item"><span class="nav-icon">♙</span><span>Sinh viên</span></button>
+        <button class="nav-item"><span class="nav-icon">▣</span><span>Lớp học</span></button>
+        <div class="nav-label" style="margin-top:28px">System</div>
+        <button class="nav-item"><span class="nav-icon">⚙</span><span>Cài đặt</span></button>
+        <div class="sidebar-note"><strong>Admin mode</strong>Quản lý dữ liệu sinh viên trong một không gian tập trung.</div>
+    </aside>
+    <main class="main">
+        <header class="topbar"><div class="crumb">Workspace / <b>Dashboard</b></div><div class="profile"><div class="avatar">AD</div><div><strong>Administrator</strong><small>Quản trị viên</small></div></div></header>
+        <section class="content">
+            <div class="heading"><div><h1>Xin chào, Admin</h1><p>Tổng quan hoạt động quản lý sinh viên hôm nay.</p></div><button class="primary" id="addButton">+ Thêm sinh viên</button></div>
+            <div class="stats">
+                <div class="stat"><div class="stat-top"><span>TỔNG SINH VIÊN</span><span class="stat-icon">♙</span></div><div class="stat-number" id="totalStudents">--</div></div>
+                <div class="stat"><div class="stat-top"><span>EMAIL ĐÃ ĐĂNG KÝ</span><span class="stat-icon">@</span></div><div class="stat-number" id="totalEmails">--</div></div>
+                <div class="stat"><div class="stat-top"><span>TRẠNG THÁI HỆ THỐNG</span><span class="stat-icon">✓</span></div><div class="stat-number" style="font-size:22px">Hoạt động</div></div>
+            </div>
+            <div class="workspace"><div class="workspace-head"><div><h2>Danh sách sinh viên</h2><p>Quản lý hồ sơ và thông tin liên hệ</p></div><label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Tìm theo tên hoặc email..." aria-label="Tìm kiếm sinh viên"></label></div><div id="tableState" class="loading">Đang tải dữ liệu...</div><div class="table-wrap" id="tableWrap" hidden><table><thead><tr><th>ID</th><th>Sinh viên</th><th>Email</th><th>Thao tác</th></tr></thead><tbody id="studentTable"></tbody></table></div></div>
+        </section>
+    </main>
+</div>
+<div class="modal-backdrop" id="modal" hidden><form class="modal" id="studentForm"><div class="modal-head"><div><h2 id="modalTitle">Thêm sinh viên</h2><p style="color:var(--muted);margin-top:5px">Điền thông tin hồ sơ bên dưới.</p></div><button class="close" type="button" id="closeModal" aria-label="Đóng">×</button></div><div class="error" id="formError" hidden></div><label class="field">Họ và tên<input id="nameInput" required maxlength="100" placeholder="Nguyễn Văn A"></label><label class="field">Email<input id="emailInput" required type="email" maxlength="150" placeholder="name@example.com"></label><div class="modal-actions"><button class="secondary" type="button" id="cancelButton">Hủy</button><button class="primary" type="submit">Lưu thông tin</button></div></form></div>
+<div class="toast" id="toast" hidden></div>
 <script>
-const API = "http://localhost:8080/api/students";
-
-function loadStudents() {
-    fetch(API)
-        .then(res => res.json())
-        .then(data => {
-            let html = "";
-            data.forEach(s => {
-                html += `
-                <tr>
-                    <td>${s.id}</td>
-                    <td>${s.name}</td>
-                    <td>${s.email}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="deleteStudent(${s.id})">Xóa</button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById("studentTable").innerHTML = html;
-        });
-}
-
-function addStudent() {
-    const student = {
-        id: document.getElementById("id").value,
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value
-    };
-
-    fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(student)
-    }).then(() => loadStudents());
-}
-
-function deleteStudent(id) {
-    fetch(`${API}/${id}`, { method: "DELETE" })
-        .then(() => loadStudents());
-}
-
-function searchStudent() {
-    const name = document.getElementById("search").value;
-    fetch(`${API}/search?name=${name}`)
-        .then(res => res.json())
-        .then(data => {
-            let html = "";
-            data.forEach(s => {
-                html += `
-                <tr>
-                    <td>${s.id}</td>
-                    <td>${s.name}</td>
-                    <td>${s.email}</td>
-                    <td></td>
-                </tr>`;
-            });
-            document.getElementById("studentTable").innerHTML = html;
-        });
-}
-
-loadStudents();
+    const API = '/api/students';
+    let students = [];
+    let editingId = null;
+    const $ = id => document.getElementById(id);
+    async function loadStudents() {
+        $('tableState').hidden = false; $('tableState').textContent = 'Đang tải dữ liệu...'; $('tableWrap').hidden = true;
+        try { const response = await fetch(API); if (!response.ok) throw new Error('Không thể tải dữ liệu'); students = await response.json(); updateStats(); renderStudents(students); }
+        catch (error) { $('tableState').textContent = 'Không thể kết nối đến máy chủ. Vui lòng thử lại.'; }
+    }
+    function updateStats() { $('totalStudents').textContent = students.length; $('totalEmails').textContent = students.filter(student => student.email).length; }
+    function renderStudents(list) {
+        $('tableState').hidden = list.length > 0; $('tableState').textContent = list.length ? '' : 'Chưa có sinh viên phù hợp.'; $('tableWrap').hidden = list.length === 0;
+        $('studentTable').innerHTML = list.map(student => `<tr><td>#${student.id}</td><td class="student-name">${escapeHtml(student.name)}</td><td class="email">${escapeHtml(student.email)}</td><td><div class="actions"><button class="action" data-edit="${student.id}">Sửa</button><button class="action delete" data-delete="${student.id}">Xóa</button></div></td></tr>`).join('');
+    }
+    function escapeHtml(value) { return String(value || '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;', '"':'&quot;'}[character])); }
+    function openModal(student) { editingId = student ? student.id : null; $('modalTitle').textContent = student ? 'Chỉnh sửa sinh viên' : 'Thêm sinh viên'; $('nameInput').value = student ? student.name : ''; $('emailInput').value = student ? student.email : ''; $('formError').hidden = true; $('modal').hidden = false; $('nameInput').focus(); }
+    function closeModal() { $('modal').hidden = true; editingId = null; }
+    function showToast(message) { $('toast').textContent = message; $('toast').hidden = false; setTimeout(() => $('toast').hidden = true, 2500); }
+    $('addButton').onclick = () => openModal(); $('closeModal').onclick = closeModal; $('cancelButton').onclick = closeModal;
+    $('modal').onclick = event => { if (event.target === $('modal')) closeModal(); };
+    $('searchInput').oninput = event => { const query = event.target.value.toLowerCase().trim(); renderStudents(students.filter(student => `${student.name} ${student.email}`.toLowerCase().includes(query))); };
+    $('studentTable').onclick = async event => { const editId = event.target.dataset.edit; const deleteId = event.target.dataset.delete; if (editId) openModal(students.find(student => student.id == editId)); if (deleteId && confirm('Bạn chắc chắn muốn xóa sinh viên này?')) { const response = await fetch(`${API}/${deleteId}`, { method: 'DELETE' }); if (response.ok) { showToast('Đã xóa sinh viên'); loadStudents(); } } };
+    $('studentForm').onsubmit = async event => { event.preventDefault(); const payload = { name: $('nameInput').value.trim(), email: $('emailInput').value.trim() }; if (!payload.name || !payload.email) return; const response = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editingId ? { id: editingId, ...payload } : payload) }); if (!response.ok) { $('formError').textContent = 'Không thể lưu thông tin. Vui lòng kiểm tra lại.'; $('formError').hidden = false; return; } closeModal(); showToast(editingId ? 'Đã cập nhật sinh viên' : 'Đã thêm sinh viên'); loadStudents(); };
+    loadStudents();
 </script>
-
 </body>
 </html>
