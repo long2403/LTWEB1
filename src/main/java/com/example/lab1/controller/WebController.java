@@ -24,6 +24,11 @@ public class WebController {
         return "redirect:/index.html";
     }
 
+    @GetMapping("/admin")
+    public String admin() {
+        return "redirect:/admin.html";
+    }
+
     // Hiển thị form thêm sinh viên (form trống)
     @GetMapping("/add")
     public String addForm(Model model) {
