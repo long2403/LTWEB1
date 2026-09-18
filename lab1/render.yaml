@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: lab1-app
+    runtime: java
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -jar target/lab1-0.0.1-SNAPSHOT.jar
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lab1_postgres
+          property: connectionString
+      - key: DATABASE_USER
+        fromDatabase:
+          name: lab1_postgres
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: lab1_postgres
+          property: password
+      - key: PORT
+        value: 8081
+
+databases:
+  - name: lab1_postgres
+    engine: postgres
+    version: 14
+    plan: free
+    initialQuery: |
+      CREATE TABLE IF NOT EXISTS students (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL
+      );

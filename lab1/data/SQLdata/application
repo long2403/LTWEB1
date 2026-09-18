@@ -1,0 +1,12 @@
+spring.application.name=lab1
+
+spring.datasource.url=jdbc:postgresql://dpg-d67bgjesb7us73e454ig-a:5432/lt_web
+spring.datasource.username=lt_web_user
+spring.datasource.password=vqj66yb0qW2XJhKJCw64UoDbY86CmPWL
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+server.port=${PORT:8080}
