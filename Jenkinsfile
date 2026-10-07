@@ -18,7 +18,9 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'chmod +x mvnw && ./mvnw -B clean package -DskipTests'
+                dir('lab1') {
+                    sh 'chmod +x mvnw && ./mvnw -B clean package -DskipTests'
+                }
             }
         }
 

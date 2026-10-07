@@ -1,5 +1,5 @@
 # Build stage
-FROM maven:3.9.9-eclipse-temurin-17 as build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY lab1/pom.xml .
@@ -15,6 +15,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/lab1-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8081
+EXPOSE 10000
 
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8081} -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-10000} -jar /app/app.jar"]

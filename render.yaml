@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: lab1-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: "off"
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lab1_postgres
+          property: connectionString
+
+databases:
+  - name: lab1_postgres
+    databaseName: lab1_db
+    postgresMajorVersion: "14"
+    plan: free

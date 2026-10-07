@@ -23,12 +23,20 @@ public class DatabaseConfig {
         try {
             URI uri = new URI(databaseUrl);
             String userInfo = uri.getUserInfo();
-            String username = userInfo.split(":")[0];
-            String password = userInfo.split(":")[1];
-            String host = uri.getHost();
-            String dbName = uri.getPath().substring(1);
+            int credentialsSeparator = userInfo == null ? -1 : userInfo.indexOf(':');
+            if (credentialsSeparator < 1 || credentialsSeparator == userInfo.length() - 1) {
+                throw new IllegalArgumentException("DATABASE_URL must contain a username and password");
+            }
 
-            // Fix port (Render thường không có port rõ ràng → mặc định 5432)
+            String username = userInfo.substring(0, credentialsSeparator);
+            String password = userInfo.substring(credentialsSeparator + 1);
+            String host = uri.getHost();
+            String path = uri.getPath();
+            if (host == null || path == null || path.length() < 2) {
+                throw new IllegalArgumentException("DATABASE_URL must contain a host and database name");
+            }
+            String dbName = path.substring(1);
+
             int port = uri.getPort();
             if (port <= 0) port = 5432;
 
@@ -37,7 +45,7 @@ public class DatabaseConfig {
                 host, port, dbName
             );
 
-            System.out.println("✅ Successfully parsed Render DATABASE_URL");
+            System.out.println("✅ Successfully parsed DATABASE_URL");
             System.out.println("Host: " + host);
             System.out.println("Port: " + port);
             System.out.println("Database: " + dbName);

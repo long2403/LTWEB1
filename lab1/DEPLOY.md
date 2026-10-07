@@ -1,87 +1,42 @@
-# 🚀 Hướng dẫn Deploy lên Render
+# Jenkins CI/CD và Render
 
-## 📋 Yêu cầu trước khi deploy
-- ✅ Có tài khoản Render (https://render.com)
-- ✅ Có GitHub repo với code này
-- ✅ Project đã được push lên GitHub
+Luồng triển khai:
 
----
-
-## 🔧 Các bước deploy
-
-### **Bước 1: Tạo GitHub Repository**
-```bash
-# Khởi tạo git (nếu chưa)
-git init
-git add .
-git commit -m "Initial commit - Ready for Render"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/lab1.git
-git push -u origin main
+```text
+GitHub -> Jenkins checkout -> Maven build -> Render Deploy Hook
+        -> Render build Docker image and run app -> public Render URL
 ```
 
-### **Bước 2: Tạo Project trên Render**
-1. Truy cập https://dashboard.render.com/
-2. Chọn **"New +" → "Web Service"**
-3. Kết nối GitHub repository
-4. Cấu hình:
-   - **Name**: `lab1-app`
-   - **Runtime**: `Java`
-   - **Build Command**: `mvn clean package -DskipTests`
-   - **Start Command**: `java -Dserver.port=$PORT -jar target/lab1-0.0.1-SNAPSHOT.jar`
-   - **Environment**: Free tier
+Jenkins kiểm tra code bằng Maven trong thư mục `lab1`. Khi build thành công, Jenkins gọi Render Deploy Hook; Render lấy commit mới nhất, build theo Dockerfile ở thư mục gốc và chạy ứng dụng. Render cung cấp URL công khai cho web service. Docker Compose không cần thiết cho luồng triển khai này.
 
-### **Bước 3: Tạo PostgreSQL Database trên Render**
-1. Chọn **"New +" → "PostgreSQL"**
-2. Cấu hình:
-   - **Name**: `lab1_postgres`
-   - **Database**: `lab1_db`
-   - **User**: Tự động (lưu lại)
-   - **Region**: Gần nhất (VN)
-   - **Pricing Plan**: Free
+## Thiết lập Render
 
-### **Bước 4: Kết nối Database vào App**
-1. Copy **Internal Database URL** từ PostgreSQL
-2. Vào **Web Service → Environment**
-3. Thêm biến môi trường:
-   - `DATABASE_URL`: `postgres://...` (từ bước 1)
-   - `PORT`: `8081` (tự động)
+1. Kết nối repository GitHub với Render và tạo Blueprint từ `render.yaml` ở thư mục gốc repository.
+2. `render.yaml` khai báo runtime Docker bằng Dockerfile ở thư mục gốc và PostgreSQL.
+3. Trong Render, mở Web Service → **Settings → Deploy Hook**, tạo hook và sao chép URL. Không đưa URL này vào Git.
+4. Sau khi deploy thành công, lấy public URL của Web Service trong Render Dashboard.
 
----
+## Thiết lập Jenkins
 
-## ✅ Kiểm tra sau deploy
-- Truy cập: `https://your-app.onrender.com/`
-- API: `https://your-app.onrender.com/api/students`
-- Logs: **Render Dashboard → Web Service → Logs**
+1. Trong **Manage Jenkins → Credentials**, thêm credential loại **Secret text**:
+   - **Secret**: Render Deploy Hook URL
+   - **ID**: `render-deploy-hook`
+2. Tạo job **Pipeline**, chọn **Pipeline script from SCM**.
+3. Cấu hình SCM là Git, điền URL repository và branch cần deploy.
+4. Đặt **Script Path** là `Jenkinsfile` (repository root), lưu và chọn **Build Now**.
+5. `Jenkinsfile` checkout code, chạy Maven Wrapper, sau đó gọi Deploy Hook chỉ khi build thành công. SCM polling kiểm tra thay đổi mỗi 5 phút.
 
----
+Máy đang chạy Jenkins cần hoạt động để SCM polling chạy. Jenkins cần quyền đọc repository; nếu repository private, cấu hình Git credentials trong job.
 
-## 🔍 Troubleshooting
+## Biến môi trường và database
 
-### ❌ Build fail
-```
-Kiểm tra: Render Logs → Maven errors
-```
+Render truyền `DATABASE_URL` từ PostgreSQL theo khai báo `fromDatabase` trong `render.yaml`. Không commit URL database hoặc Deploy Hook vào repository. Render thiết lập `PORT`; Docker entrypoint dùng cổng đó (mặc định 10000).
 
-### ❌ Database connection failed
-```
-1. Kiểm tra Internal Database URL có đúng không
-2. Restart Web Service
-3. Kiểm tra environment variables
-```
+Ứng dụng dùng Hibernate `ddl-auto=update` để cập nhật schema khi khởi động. Nếu cần dữ liệu mẫu, nạp chúng riêng vào PostgreSQL; không dựa vào `initialQuery` trong Render Blueprint.
 
-### ❌ Port error
-```
-Render tự động gán PORT, không cần config thêm
-```
+## Kiểm tra khi lỗi
 
----
-
-## 📝 Ghi chú
-- Database PostgreSQL miễn phí trên Render (auto backup)
-- Web Service miễn phí (spin down nếu không dùng 15 phút)
-- Để luôn chạy: Nâng lên paid plan
-
----
-
-**Chúc bạn deploy thành công! 🎉**
+- **Jenkins Build lỗi**: mở **Console Output**; bước deploy sẽ không chạy.
+- **Jenkins báo không có credential**: kiểm tra Jenkins credential ID chính xác là `render-deploy-hook`.
+- **Render deploy lỗi**: kiểm tra Events/Logs của Web Service và trạng thái PostgreSQL trong Render Dashboard.
+- **Không mở được URL**: đợi Render báo deploy thành công rồi dùng URL công khai của Web Service.
