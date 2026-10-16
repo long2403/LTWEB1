@@ -163,6 +163,7 @@ class Lab1ApplicationTests {
 
 	@Test
 	void adminRoleCanManageContentAndReadTheDashboard() throws Exception {
+	    String longCoverUrl = "https://images.example.test/" + "a".repeat(400);
 	    mockMvc.perform(post("/api/books")
 	            .with(user("admin").roles("ADMIN"))
 	            .contentType(MediaType.APPLICATION_JSON)
@@ -173,9 +174,11 @@ class Lab1ApplicationTests {
 	            .with(user("admin").roles("ADMIN"))
 	            .with(csrf())
 	            .contentType(MediaType.APPLICATION_JSON)
-	            .content("{\"title\":\"Admin Story\",\"author\":\"Admin\",\"genre\":\"Fantasy\"}"))
+	            .content("{\"title\":\"Admin Story\",\"author\":\"Admin\",\"genre\":\"Fantasy\",\"coverUrl\":\""
+	                + longCoverUrl + "\"}"))
 	        .andExpect(status().isOk())
-	        .andExpect(jsonPath("$.title").value("Admin Story"));
+	        .andExpect(jsonPath("$.title").value("Admin Story"))
+	        .andExpect(jsonPath("$.coverUrl").value(longCoverUrl));
 
 	    mockMvc.perform(get("/api/admin/summary").with(user("admin").roles("ADMIN")))
 	        .andExpect(status().isOk())

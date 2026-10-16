@@ -34,6 +34,8 @@ Render truyền `DATABASE_URL` từ PostgreSQL theo khai báo `fromDatabase` tro
 
 Ứng dụng dùng Hibernate `ddl-auto=update` để cập nhật schema khi khởi động. Nếu cần dữ liệu mẫu, nạp chúng riêng vào PostgreSQL; không dựa vào `initialQuery` trong Render Blueprint.
 
+Flyway chạy migration trước khi Hibernate cập nhật schema. Với PostgreSQL hiện có, migration chuẩn hóa cột `books.cover_url` thành `TEXT` để URL ảnh dài không bị lỗi giới hạn 255 ký tự. Sao lưu database trước khi deploy bản migration đầu tiên.
+
 ### Tài khoản và phiên đăng nhập
 
 Trong Render, mở Web Service → **Environment** và đặt:

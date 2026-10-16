@@ -33,8 +33,8 @@ public class Book {
     @Column(length = 2000)
     private String description;
 
-    @Size(max = 1000)
-    @Column(length = 1000)
+    @Size(max = 5000)
+    @Column(columnDefinition = "TEXT")
     private String coverUrl;
     @Size(max = 40)
     @Column(length = 40)
