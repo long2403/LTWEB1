@@ -34,7 +34,7 @@ Render truyền `DATABASE_URL` từ PostgreSQL theo khai báo `fromDatabase` tro
 
 Ứng dụng dùng Hibernate `ddl-auto=update` để cập nhật schema khi khởi động. Nếu cần dữ liệu mẫu, nạp chúng riêng vào PostgreSQL; không dựa vào `initialQuery` trong Render Blueprint.
 
-Flyway chạy migration trước khi Hibernate cập nhật schema. Với PostgreSQL hiện có, migration chuẩn hóa cột `books.cover_url` thành `TEXT` và thêm metadata phân loại/đề cử cho truyện. Sao lưu database trước khi deploy migration mới.
+Flyway chạy migration trước khi Hibernate cập nhật schema. Với PostgreSQL hiện có, migration chuẩn hóa cột `books.cover_url` thành `TEXT`, thêm metadata phân loại/đề cử cho truyện và cột đánh dấu bình luận đã xóa để giữ nguyên mạch phản hồi. Sao lưu database trước khi deploy migration mới.
 
 ### Tài khoản và phiên đăng nhập
 
@@ -52,7 +52,10 @@ Khi chạy local qua HTTP, có thể để `SESSION_COOKIE_SECURE=false` (giá t
 
 - Trang chủ chia truyện đề cử, truyện mới, truyện tranh và truyện chữ; admin chọn loại và bật đề cử trong form quản lý truyện. Danh sách chính dùng API phân trang theo trang, tìm kiếm, thể loại, trạng thái, loại truyện và sắp xếp.
 - Trang chi tiết `/book.html?id=<id>` có danh sách chương, trình đọc theo loại truyện, bình luận và trả lời. Lượt xem tăng khi mở chi tiết.
+- Người đăng nhập có thể sửa hoặc xóa bình luận/phản hồi của chính mình; quản trị viên có thể gỡ nội dung. Xóa bình luận thay nội dung bằng trạng thái đã xóa để không làm đứt các phản hồi bên dưới.
 - `/library.html` lưu danh sách theo dõi, lịch sử đọc và thông báo. Tài khoản đăng nhập nhận thông báo khi có truyện mới, chương mới của truyện đang theo dõi hoặc người khác trả lời bình luận.
+- Bìa không nhập URL sẽ tự sinh ảnh SVG trang trí theo tên truyện trên trang chủ, chi tiết, tủ sách và quản trị.
+- `/games.html` có ba trò chơi nhỏ chạy ngay trong trình duyệt: lật thẻ tìm cặp, kéo búa bao và thử thách phản xạ.
 - Biểu tượng nhóm chat trên trang chủ tải tin nhắn định kỳ; người đã đăng nhập có thể gửi tin nhắn, emoji và ảnh PNG/JPG/GIF/WebP tối đa 256 KB. Chat giữ tối đa 1.000 tin nhắn gần nhất trong PostgreSQL để giới hạn tăng dung lượng.
 - Khi khởi động lần đầu sau bản này, ứng dụng tự thêm 30 truyện demo nguyên bản, mỗi truyện có 3 chương (90 chương tổng cộng) nếu chưa có; lần khởi động sau không tạo bản sao. Có thể xóa các truyện demo từ trang quản trị.
 

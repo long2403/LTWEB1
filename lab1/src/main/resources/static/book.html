@@ -26,6 +26,7 @@
         .comment{padding:12px 0;border-bottom:1px solid #eff2f7}.comment.reply{margin-left:20px;padding-left:13px;border-left:2px solid #d7e6ff}
         .comment-head{display:flex;justify-content:space-between;gap:10px;color:#52627a}.comment-head strong{color:var(--ink)}
         .comment p{white-space:pre-wrap;margin:6px 0}.reply-button{color:var(--accent);background:none;font-weight:700;padding:3px 0}
+        .comment-actions{display:flex;gap:12px;flex-wrap:wrap}.comment-action{color:#52627a;background:none;font-weight:700;padding:3px 0}.comment-action.delete{color:#b13f43}
         .notice{padding:12px;background:#fff7df;color:#754d00;border-radius:8px;margin:12px 0}.empty{color:var(--muted);padding:15px}
         .reader{position:fixed;inset:0;z-index:5;background:#101826;color:white;display:none;grid-template-rows:auto 1fr auto}
         .reader.open{display:grid}.reader-head,.reader-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px max(16px,calc((100vw - 900px)/2));background:#17243a}
@@ -36,9 +37,9 @@
     </style>
 </head>
 <body>
-<header><a href="/" class="brand">Truyện Mộc</a><nav class="nav"><a href="/">Khám phá</a><a href="/library.html">Tủ sách</a><a id="accountLink" href="/login.html">Đăng nhập</a></nav></header>
+<header><a href="/index.html" class="brand">Truyện Mộc</a><nav class="nav"><a href="/index.html">Khám phá</a><a href="/library.html">Tủ sách</a><a href="/games.html">Trò chơi</a><a id="accountLink" href="/login.html">Đăng nhập</a></nav></header>
 <main>
-    <div class="crumb"><a href="/">Trang chủ</a> / <span id="crumbTitle">Chi tiết truyện</span></div>
+    <div class="crumb"><a href="/index.html">Trang chủ</a> / <span id="crumbTitle">Chi tiết truyện</span></div>
     <div id="pageError" class="notice" role="alert" hidden></div>
     <section class="hero" id="storyCard" hidden>
         <img class="cover" id="cover" src="/book-placeholder.svg" alt="Bìa truyện">
@@ -49,16 +50,17 @@
         <section class="panel"><h2>Danh sách chương <span class="badge" id="chapterCount"></span></h2><div id="chapterList"></div></section>
         <section class="panel"><h2>Bình luận & phản hồi</h2><div id="comments"></div>
             <form class="comment-form" id="commentForm"><div id="replyingTo" class="notice" hidden></div><textarea id="commentText" required maxlength="2000" placeholder="Chia sẻ cảm nhận hoặc trả lời độc giả..."></textarea>
-                <div class="actions"><select id="rating" aria-label="Đánh giá"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select><button class="primary">Gửi bình luận</button><button type="button" class="secondary" id="cancelReply" hidden>Hủy trả lời</button></div></form>
+                <div class="actions"><select id="rating" aria-label="Đánh giá"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select><button class="primary" id="commentSubmit">Gửi bình luận</button><button type="button" class="secondary" id="cancelReply" hidden>Hủy</button></div></form>
         </section>
     </div>
 </main>
 <section class="reader" id="reader"><div class="reader-head"><div><strong id="readerTitle"></strong><span id="readerChapter" style="margin-left:12px;color:#c7d5e8"></span></div><div><select id="readerSelect" aria-label="Chọn chương"></select><button id="closeReader">Đóng</button></div></div><div class="reader-body" id="readerBody"></div><div class="reader-foot"><button id="prevChapter">← Chương trước</button><button id="nextChapter">Chương sau →</button></div></section>
+<script src="/story-covers.js"></script>
 <script>
     const $ = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
     const bookId = Number(params.get('id'));
-    let book = null, chapters = [], session = null, replyTo = null, chapterIndex = 0, followed = false;
+    let book = null, chapters = [], comments = [], session = null, replyTo = null, editingComment = null, chapterIndex = 0, followed = false;
     const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const imageUrl = value => { try { const url = new URL(value || '/book-placeholder.svg', location.origin); return ['http:','https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg'; } catch { return '/book-placeholder.svg'; } };
     function reportError(message) { $('pageError').textContent = message; $('pageError').hidden = !message; }
@@ -94,7 +96,7 @@
             $('accountLink').href=session?'/library.html':'/login.html';
             $('title').textContent=book.title; $('crumbTitle').textContent=book.title;
             document.title=`${book.title} | Truyện Mộc`;
-            $('cover').src=imageUrl(book.coverUrl); $('cover').onerror=()=>{$('cover').src='/book-placeholder.svg';};
+            $('cover').src=window.storyCoverUrl(book.coverUrl,book.title); $('cover').onerror=()=>{$('cover').src='/book-placeholder.svg';};
             $('typeBadge').textContent=book.storyType==='NOVEL'?'Truyện chữ':'Truyện tranh';
             $('author').textContent=`Tác giả: ${book.author||'Đang cập nhật'}`;
             $('genre').textContent=`Thể loại: ${book.genre||'Chưa phân loại'}`;
@@ -125,10 +127,14 @@
         $('followButton').textContent=followed?'♥ Đang theo dõi':'♡ Theo dõi';
     }
     function renderComment(comment, children, depth=0) {
-        return `<article class="comment ${depth?'reply':''}"><div class="comment-head"><strong>${safe(comment.username)}</strong><span>${comment.rating?'★'.repeat(Number(comment.rating)):''}</span></div><p>${safe(comment.content)}</p><button class="reply-button" type="button" data-reply="${Number(comment.id)}" data-username="${safe(comment.username)}">↩ Phản hồi</button>${children}</article>`;
+        const canEdit = session && comment.username.toLocaleLowerCase() === session.username.toLocaleLowerCase() && !comment.deleted;
+        const rating = comment.rating ? '★'.repeat(Number(comment.rating)) : '';
+        const content = comment.deleted ? '<em>Bình luận đã được xóa.</em>' : safe(comment.content);
+        const actions = `<div class="comment-actions">${comment.deleted ? '' : `<button class="reply-button" type="button" data-reply="${Number(comment.id)}" data-username="${safe(comment.username)}">↩ Phản hồi</button>`}${canEdit ? `<button class="comment-action" type="button" data-edit-comment="${Number(comment.id)}">Sửa</button><button class="comment-action delete" type="button" data-delete-comment="${Number(comment.id)}">Xóa</button>` : ''}</div>`;
+        return `<article class="comment ${depth?'reply':''}"><div class="comment-head"><strong>${safe(comment.username)}</strong><span>${rating}</span></div><p>${content}</p>${actions}${children}</article>`;
     }
     async function loadComments() {
-        const comments=await fetch(`/api/books/${bookId}/comments`).then(json);
+        comments=await fetch(`/api/books/${bookId}/comments`).then(json);
         const map=new Map(comments.map(item=>[Number(item.id),{...item,children:[]}]));
         const roots=[];
         for(const item of map.values()) {
@@ -139,10 +145,25 @@
         $('comments').innerHTML=roots.length?roots.map(item=>tree(item)).join(''):'<div class="empty">Hãy là người đầu tiên chia sẻ cảm nhận về bộ truyện này.</div>';
     }
     function beginReply(id,username) {
+        editingComment=null;
         replyTo=id; $('replyingTo').textContent=`Đang phản hồi @${username}`;
-        $('replyingTo').hidden=false; $('cancelReply').hidden=false; $('commentText').focus();
+        $('replyingTo').hidden=false; $('cancelReply').hidden=false; $('commentSubmit').textContent='Gửi phản hồi';
+        $('rating').hidden=true; $('commentText').focus();
     }
-    function cancelReply() { replyTo=null; $('replyingTo').hidden=true; $('cancelReply').hidden=true; }
+    function beginEdit(comment) {
+        replyTo=null; editingComment=comment;
+        $('replyingTo').textContent='Đang chỉnh sửa bình luận của bạn';
+        $('replyingTo').hidden=false; $('cancelReply').hidden=false;
+        $('commentText').value=comment.content;
+        $('rating').hidden=Boolean(comment.parentCommentId);
+        if (comment.rating) $('rating').value=String(comment.rating);
+        $('commentSubmit').textContent='Lưu chỉnh sửa';
+        $('commentText').focus();
+    }
+    function cancelReply() {
+        replyTo=null; editingComment=null; $('replyingTo').hidden=true; $('cancelReply').hidden=true;
+        $('rating').hidden=false; $('commentSubmit').textContent='Gửi bình luận'; $('commentText').value='';
+    }
     async function setFollow() {
         if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
         try{
@@ -170,13 +191,33 @@
     $('followButton').addEventListener('click',setFollow);
     $('startButton').addEventListener('click',()=>openChapter(0));
     $('chapterList').addEventListener('click',event=>{const button=event.target.closest('[data-chapter]');if(button)openChapter(Number(button.dataset.chapter));});
-    $('comments').addEventListener('click',event=>{const button=event.target.closest('[data-reply]');if(button){if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}beginReply(Number(button.dataset.reply),button.dataset.username);}});
+    $('comments').addEventListener('click',async event=>{
+        const replyButton=event.target.closest('[data-reply]');
+        const editButton=event.target.closest('[data-edit-comment]');
+        const deleteButton=event.target.closest('[data-delete-comment]');
+        if(replyButton){if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}beginReply(Number(replyButton.dataset.reply),replyButton.dataset.username);return;}
+        if(editButton){
+            const comment=comments.find(item=>Number(item.id)===Number(editButton.dataset.editComment));
+            if(comment) beginEdit(comment);
+            return;
+        }
+        if(deleteButton && confirm('Xóa bình luận này?')){
+            try{await json(await request(`/api/books/${bookId}/comments/${Number(deleteButton.dataset.deleteComment)}`,{method:'DELETE'}));await loadComments();}
+            catch(error){reportError(error.message);}
+        }
+    });
     $('cancelReply').addEventListener('click',cancelReply);
     $('commentForm').addEventListener('submit',async event=>{
         event.preventDefault();if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
         const content=$('commentText').value.trim();if(!content)return;
         try{
-            const response=await request(`/api/books/${bookId}/comments`,{method:'POST',body:JSON.stringify({content,rating:replyTo?null:Number($('rating').value),parentCommentId:replyTo})});
+            const editing=editingComment;
+            const response=await request(editing?`/api/books/${bookId}/comments/${editing.id}`:`/api/books/${bookId}/comments`,{
+                method:editing?'PUT':'POST',
+                body:JSON.stringify(editing
+                    ?{content,rating:editing.parentCommentId?null:Number($('rating').value)}
+                    :{content,rating:replyTo?null:Number($('rating').value),parentCommentId:replyTo})
+            });
             await json(response);$('commentText').value='';cancelReply();await loadComments();
         }catch(error){reportError(error.message);}
     });

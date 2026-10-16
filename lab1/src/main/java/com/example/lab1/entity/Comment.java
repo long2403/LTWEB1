@@ -23,6 +23,8 @@ public class Comment {
     private Integer rating;
     @Column(name = "parent_comment_id")
     private Integer parentCommentId;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
     private Instant createdAt = Instant.now();
 
     public Integer getId() { return id; }
@@ -37,6 +39,8 @@ public class Comment {
     public void setRating(Integer rating) { this.rating = rating; }
     public Integer getParentCommentId() { return parentCommentId; }
     public void setParentCommentId(Integer parentCommentId) { this.parentCommentId = parentCommentId; }
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

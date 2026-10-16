@@ -27,6 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -145,6 +147,14 @@ class Lab1ApplicationTests {
 	        .andExpect(status().isOk())
 	        .andExpect(jsonPath("$.authenticated").value(true))
 	        .andExpect(jsonPath("$.username").value("reader_test"));
+	    mockMvc.perform(get("/").session(authenticatedSession))
+	        .andExpect(status().is3xxRedirection())
+	        .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/index.html"));
+	    mockMvc.perform(get("/index.html").session(authenticatedSession))
+	        .andExpect(status().isOk());
+	    mockMvc.perform(get("/api/auth/me").session(authenticatedSession))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.authenticated").value(true));
 
 	    Book book = new Book();
 	    book.setTitle("Test Story");
@@ -184,13 +194,17 @@ class Lab1ApplicationTests {
 	        commentResult.getResponse().getContentAsString(), "$.id"
 	    );
 
-	    mockMvc.perform(post("/api/books/" + book.getId() + "/comments")
+	    MvcResult replyResult = mockMvc.perform(post("/api/books/" + book.getId() + "/comments")
 	            .with(user("other_reader").roles("USER"))
 	            .with(csrf())
 	            .contentType(MediaType.APPLICATION_JSON)
 	            .content("{\"content\":\"I agree!\",\"parentCommentId\":" + commentId + "}"))
 	        .andExpect(status().isOk())
-	        .andExpect(jsonPath("$.parentCommentId").value(commentId));
+	        .andExpect(jsonPath("$.parentCommentId").value(commentId))
+	        .andReturn();
+	    Integer replyId = com.jayway.jsonpath.JsonPath.read(
+	        replyResult.getResponse().getContentAsString(), "$.id"
+	    );
 
 	    mockMvc.perform(get("/api/me/notifications").session(authenticatedSession))
 	        .andExpect(status().isOk())
@@ -199,6 +213,35 @@ class Lab1ApplicationTests {
 	    mockMvc.perform(get("/api/me/notifications/unread-count").session(authenticatedSession))
 	        .andExpect(status().isOk())
 	        .andExpect(jsonPath("$.count").value(1));
+
+	    mockMvc.perform(put("/api/books/" + book.getId() + "/comments/" + replyId)
+	            .with(user("other_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"content\":\"Edited reply\",\"rating\":null}"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.content").value("Edited reply"));
+
+	    mockMvc.perform(delete("/api/books/" + book.getId() + "/comments/" + replyId)
+	            .with(user("third_reader").roles("USER"))
+	            .with(csrf()))
+	        .andExpect(status().isForbidden());
+
+	    mockMvc.perform(put("/api/books/" + book.getId() + "/comments/" + commentId)
+	            .session(authenticatedSession)
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"content\":\"Edited story review\",\"rating\":4}"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.content").value("Edited story review"))
+	        .andExpect(jsonPath("$.rating").value(4));
+
+	    mockMvc.perform(put("/api/books/" + book.getId() + "/comments/" + commentId)
+	            .with(user("other_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"content\":\"Not the author\",\"rating\":1}"))
+	        .andExpect(status().isForbidden());
 
 	    mockMvc.perform(post("/api/chapters")
 	            .with(user("admin").roles("ADMIN"))
@@ -228,6 +271,19 @@ class Lab1ApplicationTests {
 	            .with(csrf()))
 	        .andExpect(status().isOk())
 	        .andExpect(jsonPath("$.updated").value(3));
+
+	    mockMvc.perform(delete("/api/books/" + book.getId() + "/comments/" + commentId)
+	            .session(authenticatedSession)
+	            .with(csrf()))
+	        .andExpect(status().isNoContent());
+	    mockMvc.perform(delete("/api/books/" + book.getId() + "/comments/" + replyId)
+	            .with(user("other_reader").roles("USER"))
+	            .with(csrf()))
+	        .andExpect(status().isNoContent());
+	    mockMvc.perform(get("/api/books/" + book.getId() + "/comments"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$[?(@.id == " + commentId + ")].deleted", contains(true)))
+	        .andExpect(jsonPath("$[?(@.id == " + replyId + ")].deleted", contains(true)));
 
 	    mockMvc.perform(post("/api/books")
 	            .session(authenticatedSession)
@@ -288,6 +344,22 @@ class Lab1ApplicationTests {
 	    mockMvc.perform(get("/api/books/recommended"))
 	        .andExpect(status().isOk())
 	        .andExpect(jsonPath("$[0].recommended").value(true));
+
+	    MvcResult comment = mockMvc.perform(post("/api/books/" + id + "/comments")
+	            .with(user("moderated_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"content\":\"Please moderate this\",\"rating\":4}"))
+	        .andExpect(status().isOk())
+	        .andReturn();
+	    Integer commentId = com.jayway.jsonpath.JsonPath.read(comment.getResponse().getContentAsString(), "$.id");
+	    mockMvc.perform(delete("/api/admin/comments/" + commentId)
+	            .with(user("admin").roles("ADMIN"))
+	            .with(csrf()))
+	        .andExpect(status().isOk());
+	    mockMvc.perform(get("/api/books/" + id + "/comments"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$[?(@.id == " + commentId + ")].deleted", contains(true)));
 
 	    mockMvc.perform(get("/api/admin/summary").with(user("admin").roles("ADMIN")))
 	        .andExpect(status().isOk())

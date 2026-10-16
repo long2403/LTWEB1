@@ -60,6 +60,8 @@ public class SecurityConfig {
                 .requestMatchers("/admin", "/add", "/edit/**", "/save", "/delete/**", "/search").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/books/*/view").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/books/*/comments").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/books/*/comments/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/books/*/comments/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/books/recommended", "/api/books/new", "/api/books/type/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/books/**", "/api/chapters/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/books/**", "/api/chapters/**").hasRole("ADMIN")

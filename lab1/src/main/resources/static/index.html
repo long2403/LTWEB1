@@ -182,11 +182,12 @@
 
     <!-- Header -->
     <header class="wrap top">
-        <a class="logo" href="/"><i>M</i> Truyện Mộc</a>
+        <a class="logo" href="/index.html"><i>M</i> Truyện Mộc</a>
         <nav class="nav">
             <a href="#library">Thư viện</a>
             <a href="#genres">Thể loại</a>
             <a href="/library.html">Tủ sách</a>
+            <a href="/games.html">Trò chơi</a>
             <a class="notification-link" href="/library.html#notifications" title="Thông báo">Thông báo <span id="notificationCount" class="notification-count" hidden>0</span></a>
             <a class="account" id="accountLink" href="/login.html">Đăng nhập</a>
         </nav>
@@ -364,6 +365,7 @@
         </form>
     </section>
 
+    <script src="/story-covers.js"></script>
     <script>
         const API = '/api/books';
         let books = [], currentBook = null, currentChapters = [], currentIndex = 0, genre = 'all';
@@ -374,17 +376,7 @@
 
         const $ = id => document.getElementById(id);
         const safe = v => String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-        const coverImage = value => {
-            const fallback = '/book-placeholder.svg';
-            if (!value) return fallback;
-            try {
-                const url = new URL(String(value), location.origin);
-                if (url.protocol !== 'http:' && url.protocol !== 'https:') return fallback;
-                return url.origin === location.origin ? `${url.pathname}${url.search}${url.hash}` : url.href;
-            } catch (e) {
-                return fallback;
-            }
-        };
+        const coverImage = (value, title) => window.storyCoverUrl(value, title);
 
         const getFavorites = () => session ? savedFavoriteIds : JSON.parse(localStorage.getItem('storyFavorites:guest') || '[]');
         const getHistory = () => session ? readingHistory : JSON.parse(localStorage.getItem('storyHistory:guest') || '[]');
@@ -505,7 +497,7 @@
             const target = $(targetId);
             target.innerHTML = items.length ? items.map(book => `
                 <article class="book">
-                    <a href="/book.html?id=${Number(book.id)}"><div class="cover"><img src="${safe(coverImage(book.coverUrl))}" alt="Bìa ${safe(book.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
+                    <a href="/book.html?id=${Number(book.id)}"><div class="cover"><img src="${safe(coverImage(book.coverUrl, book.title))}" alt="Bìa ${safe(book.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
                     <div class="book-info"><h3 title="${safe(book.title)}">${safe(book.title)}</h3>
                         <div class="meta"><span>${safe(book.genre || (book.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh'))}</span><span>◉ ${Number(book.views || 0).toLocaleString('vi')}</span></div>
                         <a class="read-btn" href="/book.html?id=${Number(book.id)}">Xem chi tiết</a>
@@ -582,7 +574,7 @@
             $('books').innerHTML = books.length ? books.map(b => `
                 <article class="book">
                     <div class="cover">
-                        <img src="${safe(coverImage(b.coverUrl))}" alt="Bìa truyện ${safe(b.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">
+                        <img src="${safe(coverImage(b.coverUrl, b.title))}" alt="Bìa truyện ${safe(b.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">
                         <button type="button" class="favorite ${getFavorites().includes(b.id) ? 'saved' : ''}" aria-label="Thêm ${safe(b.title)} vào yêu thích" aria-pressed="${getFavorites().includes(b.id)}" onclick="toggleFavorite(${Number(b.id)})">♥</button>
                         <span class="badge">${safe(b.status || 'Chưa cập nhật')}</span>
                     </div>
@@ -630,7 +622,7 @@
             currentBook = books.find(b => b.id === id);
             if (!currentBook) return;
             $('detailTitle').textContent = currentBook.title;
-            $('detailCover').src = coverImage(currentBook.coverUrl);
+            $('detailCover').src = coverImage(currentBook.coverUrl, currentBook.title);
             $('detailMeta').textContent = `${currentBook.author || 'Chưa rõ'} · ${currentBook.genre || 'Chưa phân loại'}`;
             $('detailDescription').textContent = currentBook.description || 'Chưa có mô tả.';
             $('detailModal').hidden = false;
@@ -739,7 +731,7 @@
             $('historyBooks').innerHTML = list.map(item => `
                 <article class="book">
                     <div class="cover" style="height:150px">
-                        <img src="${safe(coverImage(item.coverUrl))}" alt="Bìa truyện ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">
+                        <img src="${safe(coverImage(item.coverUrl, item.title))}" alt="Bìa truyện ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">
                     </div>
                     <div class="book-info">
                         <h3>${safe(item.title)}</h3>

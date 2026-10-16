@@ -44,9 +44,13 @@ public class AdminController {
 
     @DeleteMapping("/comments/{id}")
     public void deleteComment(@PathVariable Integer id) {
-        if (!comments.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bình luận không tồn tại.");
+        Comment comment = comments.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bình luận không tồn tại.")
+        );
+        if (!comment.isDeleted()) {
+            comment.setDeleted(true);
+            comment.setContent("");
+            comments.save(comment);
         }
-        comments.deleteById(id);
     }
 }

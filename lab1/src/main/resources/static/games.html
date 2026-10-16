@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trò chơi thư giãn | Truyện Mộc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#17243a;--muted:#718096;--paper:#f5f8fc;--line:#e4ebf4;--accent:#3478f6;--mint:#dff7ee}
+        *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 "DM Sans",sans-serif}
+        a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:0}
+        header{height:68px;padding:0 max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}
+        .logo{font:700 22px "Playfair Display",serif;color:#1d3559}.nav{display:flex;gap:18px;color:var(--muted);font-weight:700}.nav a:hover{color:var(--accent)}
+        main{max-width:1080px;margin:38px auto;padding:0 20px}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:11px}
+        h1,h2{font-family:"Playfair Display",serif}h1{font-size:38px;line-height:1.2;margin:7px 0}.intro{color:var(--muted);margin:0 0 25px}
+        .games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.game{padding:22px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px #18375c0a}.game h2{margin:0;font-size:23px}.game p{color:var(--muted);margin:5px 0 17px}
+        .primary,.choice{padding:10px 15px;border-radius:9px;background:var(--accent);color:white;font-weight:700}.secondary{padding:9px 13px;border-radius:9px;background:#edf4ff;color:#2459aa;font-weight:700}
+        .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:330px;margin:0 auto 14px}.memory button{aspect-ratio:1;border-radius:10px;background:#edf4ff;color:var(--ink);font-size:26px;font-weight:700}.memory button.open,.memory button.matched{background:var(--mint)}
+        .center{text-align:center}.message{min-height:28px;color:#285d52;font-weight:700}.rps-choices{display:flex;justify-content:center;gap:10px}.choice{min-width:82px;font-size:20px}.score{color:var(--muted);font-weight:700}
+        .reaction-pad{display:grid;place-items:center;min-height:185px;margin:10px 0 14px;border-radius:13px;background:#edf4ff;color:#2459aa;font-size:20px;font-weight:700;text-align:center;padding:18px}
+        .reaction-pad.waiting{background:#fff0db;color:#985b08}.reaction-pad.ready{background:#dff7ee;color:#12664d}.reaction-pad.result{background:#ecebff;color:#5549a6}
+        @media(max-width:700px){main{margin:25px auto}.games{grid-template-columns:1fr}.game{padding:18px}h1{font-size:32px}.nav{gap:10px;font-size:13px}}
+    </style>
+</head>
+<body>
+<header><a class="logo" href="/index.html">Truyện Mộc</a><nav class="nav"><a href="/index.html">Khám phá</a><a href="/library.html">Tủ sách</a></nav></header>
+<main>
+    <div class="eyebrow">Nghỉ ngơi giữa những chương truyện</div>
+    <h1>Góc trò chơi</h1>
+    <p class="intro">Ba trò chơi nhỏ, chạy ngay trên trình duyệt, không cần tài khoản hay cài đặt.</p>
+    <section class="games" aria-label="Danh sách trò chơi">
+        <article class="game">
+            <h2>Lật thẻ tìm cặp</h2><p>Tìm đủ 6 cặp biểu tượng với ít lượt lật nhất.</p>
+            <div class="memory" id="memory" aria-label="Bảng lật thẻ"></div>
+            <div class="center"><div class="message" id="memoryMessage" aria-live="polite">Lượt lật: 0</div><button class="secondary" id="resetMemory">Chơi lại</button></div>
+        </article>
+        <article class="game">
+            <h2>Kéo búa bao</h2><p>Chọn một biểu tượng và thử thắng máy nhé.</p>
+            <div class="rps-choices"><button class="choice" data-choice="rock" aria-label="Kéo">✊</button><button class="choice" data-choice="paper" aria-label="Bao">✋</button><button class="choice" data-choice="scissors" aria-label="Búa">✌️</button></div>
+            <div class="center"><div class="message" id="rpsMessage" aria-live="polite">Bạn 0 - Máy 0</div><div class="score" id="rpsResult">Chọn một nước đi để bắt đầu.</div></div>
+        </article>
+        <article class="game">
+            <h2>Thử thách phản xạ</h2><p>Bấm bắt đầu, chờ nền chuyển xanh rồi bấm nhanh nhất có thể.</p>
+            <button class="reaction-pad" id="reactionPad" type="button">Bấm để bắt đầu</button>
+            <div class="center"><div class="message" id="reactionMessage" aria-live="polite">Đừng bấm quá sớm nhé!</div><button class="secondary" id="resetReaction">Thử lại</button></div>
+        </article>
+    </section>
+</main>
+<script>
+    const memoryBoard=document.getElementById('memory');
+    const memoryMessage=document.getElementById('memoryMessage');
+    const symbols=['🌙','📚','🌿','⭐','🦊','🍵'];
+    let cards=[],opened=[],moves=0,locked=false;
+    function startMemory(){
+        cards=[...symbols,...symbols].sort(()=>Math.random()-.5).map((symbol,index)=>({symbol,index,matched:false}));
+        opened=[];moves=0;locked=false;memoryMessage.textContent='Lượt lật: 0';
+        memoryBoard.innerHTML=cards.map(card=>`<button type="button" data-card="${card.index}" aria-label="Thẻ úp">?</button>`).join('');
+    }
+    memoryBoard.addEventListener('click',event=>{
+        const button=event.target.closest('[data-card]');
+        if(!button||locked)return;
+        const card=cards[Number(button.dataset.card)];
+        if(!card||card.matched||opened.includes(card.index))return;
+        button.textContent=card.symbol;button.classList.add('open');button.setAttribute('aria-label',card.symbol);
+        opened.push(card.index);
+        if(opened.length!==2)return;
+        moves++;memoryMessage.textContent=`Lượt lật: ${moves}`;
+        const [first,second]=opened.map(index=>cards[index]);
+        if(first.symbol===second.symbol){
+            first.matched=true;second.matched=true;opened=[];memoryBoard.querySelectorAll('.open').forEach(item=>item.classList.replace('open','matched'));
+            if(cards.every(item=>item.matched))memoryMessage.textContent=`Hoàn thành sau ${moves} lượt!`;
+        }else{
+            locked=true;window.setTimeout(()=>{for(const index of opened){const item=memoryBoard.querySelector(`[data-card="${index}"]`);item.textContent='?';item.classList.remove('open');item.setAttribute('aria-label','Thẻ úp');}opened=[];locked=false;},750);
+        }
+    });
+    document.getElementById('resetMemory').addEventListener('click',startMemory);
+
+    const movesByKey={rock:'✊',paper:'✋',scissors:'✌️'};
+    let playerScore=0,computerScore=0;
+    document.querySelectorAll('[data-choice]').forEach(button=>button.addEventListener('click',()=>{
+        const player=button.dataset.choice;
+        const options=Object.keys(movesByKey);
+        const computer=options[Math.floor(Math.random()*options.length)];
+        let outcome='Hòa ván này.';
+        if(player!==computer){
+            const wins=(player==='rock'&&computer==='scissors')||(player==='paper'&&computer==='rock')||(player==='scissors'&&computer==='paper');
+            if(wins)playerScore++;else computerScore++;
+            outcome=wins?'Bạn thắng ván này!':'Máy thắng ván này.';
+        }
+        document.getElementById('rpsMessage').textContent=`Bạn ${playerScore} - Máy ${computerScore}`;
+        document.getElementById('rpsResult').textContent=`Bạn ${movesByKey[player]} · Máy ${movesByKey[computer]} — ${outcome}`;
+    }));
+
+    const reactionPad=document.getElementById('reactionPad');
+    const reactionMessage=document.getElementById('reactionMessage');
+    let reactionState='idle',reactionTimer=null,reactionStart=0;
+    function resetReaction(message='Đừng bấm quá sớm nhé!'){
+        window.clearTimeout(reactionTimer);reactionState='idle';reactionPad.className='reaction-pad';
+        reactionPad.textContent='Bấm để bắt đầu';reactionMessage.textContent=message;
+    }
+    reactionPad.addEventListener('click',()=>{
+        if(reactionState==='idle'){
+            reactionState='waiting';reactionPad.classList.add('waiting');reactionPad.textContent='Chờ màu xanh...';reactionMessage.textContent='Chuẩn bị!';
+            reactionTimer=window.setTimeout(()=>{reactionState='ready';reactionStart=performance.now();reactionPad.className='reaction-pad ready';reactionPad.textContent='BẤM NGAY!';},1000+Math.random()*2500);
+        }else if(reactionState==='waiting'){
+            resetReaction('Bạn bấm sớm quá! Bấm để thử lại.');
+        }else if(reactionState==='ready'){
+            const elapsed=Math.round(performance.now()-reactionStart);reactionState='result';
+            reactionPad.className='reaction-pad result';reactionPad.textContent=`${elapsed} ms`;
+            reactionMessage.textContent=elapsed<250?'Nhanh như chớp! Bấm để chơi lại.':'Bấm để thử lại và phá kỷ lục.';
+        }else resetReaction();
+    });
+    document.getElementById('resetReaction').addEventListener('click',()=>resetReaction());
+    startMemory();
+</script>
+</body>
+</html>

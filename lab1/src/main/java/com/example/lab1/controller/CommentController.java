@@ -12,8 +12,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,6 +64,11 @@ public class CommentController {
                     org.springframework.http.HttpStatus.BAD_REQUEST, "Bình luận trả lời phải thuộc cùng bộ truyện."
                 );
             }
+            if (parent.isDeleted()) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.GONE, "Bình luận này đã bị xóa."
+                );
+            }
         }
         Comment comment = new Comment();
         comment.setBookId(bookId);
@@ -84,10 +91,77 @@ public class CommentController {
         return saved;
     }
 
+    @PutMapping("/{commentId}")
+    public Comment edit(
+        @PathVariable Integer bookId,
+        @PathVariable Integer commentId,
+        @Valid @RequestBody CommentUpdateRequest request,
+        Authentication authentication
+    ) {
+        Comment comment = findComment(bookId, commentId);
+        if (!comment.getUsername().equalsIgnoreCase(authentication.getName())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Bạn chỉ có thể sửa bình luận của mình."
+            );
+        }
+        if (comment.isDeleted()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.GONE, "Bình luận này đã bị xóa."
+            );
+        }
+        comment.setContent(request.content().trim());
+        if (comment.getParentCommentId() == null) {
+            comment.setRating(request.rating());
+        }
+        return comments.save(comment);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public org.springframework.http.ResponseEntity<Void> delete(
+        @PathVariable Integer bookId,
+        @PathVariable Integer commentId,
+        Authentication authentication
+    ) {
+        Comment comment = findComment(bookId, commentId);
+        boolean admin = authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        if (!admin && !comment.getUsername().equalsIgnoreCase(authentication.getName())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Bạn chỉ có thể xóa bình luận của mình."
+            );
+        }
+        if (!comment.isDeleted()) {
+            comment.setDeleted(true);
+            comment.setContent("");
+            comments.save(comment);
+        }
+        return org.springframework.http.ResponseEntity.noContent().build();
+    }
+
+    private Comment findComment(Integer bookId, Integer commentId) {
+        Comment comment = comments.findById(commentId).orElseThrow(
+            () -> new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "Bình luận không tồn tại."
+            )
+        );
+        if (!comment.getBookId().equals(bookId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "Bình luận không thuộc bộ truyện này."
+            );
+        }
+        return comment;
+    }
+
     public record CommentRequest(
         @NotBlank @Size(max = 2000) String content,
         @Min(1) @Max(5) Integer rating,
         @jakarta.validation.constraints.Positive Integer parentCommentId
+    ) {
+    }
+
+    public record CommentUpdateRequest(
+        @NotBlank @Size(max = 2000) String content,
+        @Min(1) @Max(5) Integer rating
     ) {
     }
 }

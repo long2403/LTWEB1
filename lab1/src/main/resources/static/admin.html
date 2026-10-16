@@ -86,11 +86,11 @@
 <body>
 <div class="app">
     <aside class="side">
-        <a class="brand" href="/"><i class="mark">M</i><span>Truyện Mộc</span></a>
+        <a class="brand" href="/index.html"><i class="mark">M</i><span>Truyện Mộc</span></a>
         <div class="label">Quản lý nội dung</div>
         <a class="nav active" href="#catalog"><b>▦</b><span>Kho truyện</span></a>
         <a class="nav" href="#moderation"><b>☷</b><span>Bình luận</span></a>
-        <a class="back" href="/">← Về trang đọc</a>
+        <a class="back" href="/index.html">← Về trang đọc</a>
     </aside>
     <main class="main">
         <header class="top">
@@ -154,6 +154,7 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+<script src="/story-covers.js"></script>
 <script>
     'use strict';
     const API = '/api/books';
@@ -161,15 +162,7 @@
     const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
     }[char]));
-    const cover = value => {
-        if (!value) return '/book-placeholder.svg';
-        try {
-            const url = new URL(value, location.origin);
-            return ['http:', 'https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg';
-        } catch (error) {
-            return '/book-placeholder.svg';
-        }
-    };
+    const cover = (value, title) => window.storyCoverUrl(value, title);
     let books = [];
     let comments = [];
     let editingBookId = null;
@@ -241,7 +234,7 @@
         const matches = books.filter(book => `${book.title || ''} ${book.author || ''}`.toLocaleLowerCase('vi').includes(query));
         $('bookTable').innerHTML = matches.length ? matches.map(book => `
             <tr>
-                <td><div class="book-cell"><img class="cover" src="${safe(cover(book.coverUrl))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"><span class="title">${safe(book.title)}</span></div></td>
+                <td><div class="book-cell"><img class="cover" src="${safe(cover(book.coverUrl, book.title))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"><span class="title">${safe(book.title)}</span></div></td>
                 <td><span class="tag">${book.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh'}</span></td>
                 <td>${safe(book.author || '—')}</td><td>${safe(book.genre || '—')}</td>
                 <td><span class="tag">${safe(book.status || 'Chưa cập nhật')}</span></td>
@@ -259,7 +252,7 @@
 
     function renderComments() {
         $('commentTable').innerHTML = comments.length ? comments.map(comment => `
-            <tr><td>${safe(comment.username)}</td><td>${safe(comment.content)}</td>
+            <tr><td>${safe(comment.username)}</td><td>${comment.deleted ? 'Bình luận đã được xóa.' : safe(comment.content)}</td>
             <td>${'★'.repeat(Math.max(0, Math.min(5, Number(comment.rating) || 0)))}</td>
             <td>${comment.createdAt ? safe(new Date(comment.createdAt).toLocaleString('vi')) : '—'}</td>
             <td><button class="action delete" type="button" data-delete-comment="${Number(comment.id)}">Gỡ</button></td></tr>

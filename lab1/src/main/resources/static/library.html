@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-<header><a class="logo" href="/">Truyện Mộc</a><a class="back" href="/">← Trang chủ</a></header>
+<header><a class="logo" href="/index.html">Truyện Mộc</a><nav style="display:flex;gap:16px"><a class="back" href="/games.html">Trò chơi</a><a class="back" href="/index.html">← Trang chủ</a></nav></header>
 <main>
     <div class="eyebrow">Không gian riêng</div>
     <h1>Tủ sách của tôi</h1>
@@ -47,13 +47,11 @@
     <section class="panel" id="history"><div class="grid" id="historyGrid"></div></section>
     <section class="panel" id="notifications"><div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="action" id="readAll" style="flex:0 0 auto">Đánh dấu đã đọc</button></div><div id="notificationList"></div></section>
 </main>
+<script src="/story-covers.js"></script>
 <script>
     const $ = id => document.getElementById(id);
     const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const cover = value => {
-        try { const url = new URL(value || '/book-placeholder.svg', location.origin); return ['http:','https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg'; }
-        catch { return '/book-placeholder.svg'; }
-    };
+    const cover = (value, title) => window.storyCoverUrl(value, title);
     async function csrf() {
         const response = await fetch('/api/auth/csrf');
         if (!response.ok) throw new Error('Không thể xác nhận yêu cầu bảo mật.');
@@ -76,7 +74,7 @@
     function renderBooks(container, items, historyMode = false) {
         if (!items.length) { container.innerHTML = '<div class="empty">Chưa có truyện nào ở đây. Hãy khám phá thư viện nhé.</div>'; return; }
         container.innerHTML = items.map(item => `
-            <article class="book"><a href="/book.html?id=${Number(item.id)}"><div class="cover"><img src="${safe(cover(item.coverUrl))}" alt="Bìa ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
+            <article class="book"><a href="/book.html?id=${Number(item.id)}"><div class="cover"><img src="${safe(cover(item.coverUrl,item.title))}" alt="Bìa ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
             <div class="body"><h2 title="${safe(item.title)}">${safe(item.title)}</h2><div class="muted">${historyMode ? `Đang đọc chương ${Number(item.chapterNumber)}` : `${safe(item.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh')} · ${Number(item.views || 0).toLocaleString('vi')} lượt xem`}</div>
             <div class="actions"><a class="action" href="/book.html?id=${Number(item.id)}${historyMode ? `&chapter=${Number(item.chapterNumber)}` : ''}">${historyMode ? 'Đọc tiếp' : 'Xem truyện'}</a></div></div></article>`).join('');
     }
