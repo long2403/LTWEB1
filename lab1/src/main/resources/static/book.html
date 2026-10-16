@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết truyện | Truyện Mộc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#17243a;--muted:#718096;--paper:#f5f8fc;--line:#e4ebf4;--accent:#3478f6}
+        *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 "DM Sans",sans-serif}
+        a{color:inherit;text-decoration:none}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}
+        header{height:68px;padding:0 max(20px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;background:white;border-bottom:1px solid var(--line)}
+        .brand{font:700 22px "Playfair Display",serif;color:#1d3559}.nav{display:flex;gap:17px;align-items:center;color:var(--muted);font-weight:600}
+        main{max-width:1100px;margin:30px auto;padding:0 20px}.crumb{color:var(--muted);margin-bottom:18px}
+        .hero{display:grid;grid-template-columns:230px 1fr;gap:28px;padding:25px;background:white;border:1px solid var(--line);border-radius:16px}
+        .cover{width:100%;height:310px;object-fit:cover;border-radius:10px;background:#eaf3ff}
+        h1{font:700 34px/1.2 "Playfair Display",serif;margin:4px 0 12px}.badge{display:inline-block;padding:4px 10px;border-radius:20px;background:#edf4ff;color:#2459aa;font-weight:700;font-size:12px}
+        .meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);margin:12px 0}.description{color:#52627a;white-space:pre-wrap}
+        .primary,.secondary{padding:10px 15px;border-radius:8px;font-weight:700}.primary{color:white;background:var(--accent)}.secondary{color:#2459aa;background:#edf4ff}
+        .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+        .columns{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:18px;margin-top:20px}
+        .panel{background:white;border:1px solid var(--line);border-radius:14px;padding:20px}.panel h2{font:700 22px "Playfair Display",serif;margin:0 0 14px}
+        .chapter{display:flex;justify-content:space-between;gap:12px;padding:11px 4px;border-bottom:1px solid #eff2f7}.chapter button{color:#2459aa;background:none;text-align:left;font-weight:700}
+        .comment-form textarea{width:100%;min-height:84px;padding:10px;border:1px solid var(--line);border-radius:8px;resize:vertical}
+        .comment{padding:12px 0;border-bottom:1px solid #eff2f7}.comment.reply{margin-left:20px;padding-left:13px;border-left:2px solid #d7e6ff}
+        .comment-head{display:flex;justify-content:space-between;gap:10px;color:#52627a}.comment-head strong{color:var(--ink)}
+        .comment p{white-space:pre-wrap;margin:6px 0}.reply-button{color:var(--accent);background:none;font-weight:700;padding:3px 0}
+        .notice{padding:12px;background:#fff7df;color:#754d00;border-radius:8px;margin:12px 0}.empty{color:var(--muted);padding:15px}
+        .reader{position:fixed;inset:0;z-index:5;background:#101826;color:white;display:none;grid-template-rows:auto 1fr auto}
+        .reader.open{display:grid}.reader-head,.reader-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px max(16px,calc((100vw - 900px)/2));background:#17243a}
+        .reader-head select{padding:8px;border-radius:6px}.reader-body{overflow:auto;text-align:center;padding:15px}
+        .reader-body img{display:block;max-width:min(100%,900px);margin:0 auto 8px}.novel{max-width:760px;margin:0 auto;text-align:left;white-space:pre-wrap;font-size:18px;line-height:2;background:#fff;color:#28364b;padding:30px;border-radius:10px}
+        .reader-foot button,.reader-head button{padding:9px 13px;color:white;background:#3478f6;border-radius:7px}
+        @media(max-width:720px){.hero{grid-template-columns:110px 1fr;gap:15px;padding:16px}.cover{height:165px}.hero h1{font-size:25px}.columns{grid-template-columns:1fr}main{padding:0 12px}.panel{padding:15px}.nav{gap:10px;font-size:12px}}
+    </style>
+</head>
+<body>
+<header><a href="/" class="brand">Truyện Mộc</a><nav class="nav"><a href="/">Khám phá</a><a href="/library.html">Tủ sách</a><a id="accountLink" href="/login.html">Đăng nhập</a></nav></header>
+<main>
+    <div class="crumb"><a href="/">Trang chủ</a> / <span id="crumbTitle">Chi tiết truyện</span></div>
+    <div id="pageError" class="notice" role="alert" hidden></div>
+    <section class="hero" id="storyCard" hidden>
+        <img class="cover" id="cover" src="/book-placeholder.svg" alt="Bìa truyện">
+        <div><span class="badge" id="typeBadge"></span><h1 id="title"></h1><div class="meta"><span id="author"></span><span id="genre"></span><span id="status"></span><span id="views"></span></div>
+        <p class="description" id="description"></p><div class="actions"><button class="primary" id="followButton">♡ Theo dõi</button><button class="secondary" id="startButton">Đọc chương đầu</button></div></div>
+    </section>
+    <div class="columns" id="contentColumns" hidden>
+        <section class="panel"><h2>Danh sách chương <span class="badge" id="chapterCount"></span></h2><div id="chapterList"></div></section>
+        <section class="panel"><h2>Bình luận & phản hồi</h2><div id="comments"></div>
+            <form class="comment-form" id="commentForm"><div id="replyingTo" class="notice" hidden></div><textarea id="commentText" required maxlength="2000" placeholder="Chia sẻ cảm nhận hoặc trả lời độc giả..."></textarea>
+                <div class="actions"><select id="rating" aria-label="Đánh giá"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select><button class="primary">Gửi bình luận</button><button type="button" class="secondary" id="cancelReply" hidden>Hủy trả lời</button></div></form>
+        </section>
+    </div>
+</main>
+<section class="reader" id="reader"><div class="reader-head"><div><strong id="readerTitle"></strong><span id="readerChapter" style="margin-left:12px;color:#c7d5e8"></span></div><div><select id="readerSelect" aria-label="Chọn chương"></select><button id="closeReader">Đóng</button></div></div><div class="reader-body" id="readerBody"></div><div class="reader-foot"><button id="prevChapter">← Chương trước</button><button id="nextChapter">Chương sau →</button></div></section>
+<script>
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const bookId = Number(params.get('id'));
+    let book = null, chapters = [], session = null, replyTo = null, chapterIndex = 0, followed = false;
+    const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const imageUrl = value => { try { const url = new URL(value || '/book-placeholder.svg', location.origin); return ['http:','https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg'; } catch { return '/book-placeholder.svg'; } };
+    function reportError(message) { $('pageError').textContent = message; $('pageError').hidden = !message; }
+    async function csrf() {
+        const response = await fetch('/api/auth/csrf');
+        if (!response.ok) throw new Error('Không thể lấy mã bảo mật.');
+        const token = document.cookie.split('; ').find(value => value.startsWith('XSRF-TOKEN='));
+        if (!token) throw new Error('Thiếu mã bảo mật. Hãy tải lại trang.');
+        return decodeURIComponent(token.slice('XSRF-TOKEN='.length));
+    }
+    async function request(url, options = {}) {
+        const headers = new Headers(options.headers || {});
+        if (options.method && !['GET','HEAD','OPTIONS'].includes(options.method.toUpperCase())) headers.set('X-XSRF-TOKEN', await csrf());
+        if (options.body) headers.set('Content-Type','application/json');
+        return fetch(url,{...options,headers,credentials:'same-origin'});
+    }
+    async function json(response) {
+        if (response.ok) return response.status === 204 ? null : response.json();
+        let message=`Yêu cầu lỗi (${response.status}).`;
+        try { const body=await response.json(); message=body.detail||body.message||message; } catch {}
+        throw new Error(message);
+    }
+    async function initialize() {
+        if (!Number.isInteger(bookId) || bookId <= 0) { reportError('Đường dẫn truyện không hợp lệ.'); return; }
+        try {
+            const [story, chapterItems, account] = await Promise.all([
+                fetch(`/api/books/${bookId}`).then(json),
+                fetch(`/api/books/${bookId}/chapters`).then(json),
+                fetch('/api/auth/me').then(json)
+            ]);
+            book=story; chapters=chapterItems; session=account.authenticated?account:null;
+            $('accountLink').textContent=session?session.username:'Đăng nhập';
+            $('accountLink').href=session?'/library.html':'/login.html';
+            $('title').textContent=book.title; $('crumbTitle').textContent=book.title;
+            document.title=`${book.title} | Truyện Mộc`;
+            $('cover').src=imageUrl(book.coverUrl); $('cover').onerror=()=>{$('cover').src='/book-placeholder.svg';};
+            $('typeBadge').textContent=book.storyType==='NOVEL'?'Truyện chữ':'Truyện tranh';
+            $('author').textContent=`Tác giả: ${book.author||'Đang cập nhật'}`;
+            $('genre').textContent=`Thể loại: ${book.genre||'Chưa phân loại'}`;
+            $('status').textContent=`Trạng thái: ${book.status||'Chưa cập nhật'}`;
+            $('views').textContent=`${Number(book.views||0).toLocaleString('vi')} lượt xem`;
+            $('description').textContent=book.description||'Chưa có giới thiệu cho bộ truyện này.';
+            $('chapterCount').textContent=chapters.length;
+            $('storyCard').hidden=false; $('contentColumns').hidden=false;
+            renderChapters(); await loadComments(); await loadFollowState();
+            const view = await request(`/api/books/${bookId}/view`,{method:'POST'});
+            const viewResult = await json(view); $('views').textContent=`${Number(viewResult.views).toLocaleString('vi')} lượt xem`;
+            const resumeChapter = Number(params.get('chapter'));
+            if (resumeChapter > 0) {
+                const index = chapters.findIndex(chapter => Number(chapter.chapterNumber) === resumeChapter);
+                if (index >= 0) await openChapter(index);
+            }
+        } catch(error) { reportError(error.message||'Không thể tải chi tiết truyện.'); }
+    }
+    function renderChapters() {
+        $('chapterList').innerHTML=chapters.length?chapters.map((chapter,index)=>`<div class="chapter"><button type="button" data-chapter="${index}">Chương ${Number(chapter.chapterNumber)} · ${safe(chapter.title||'Chưa đặt tên')}</button><span class="muted">${chapter.createdAt?new Date(chapter.createdAt).toLocaleDateString('vi'):''}</span></div>`).join(''):'<div class="empty">Truyện chưa có chương.</div>';
+        $('readerSelect').innerHTML=chapters.map((chapter,index)=>`<option value="${index}">Chương ${Number(chapter.chapterNumber)}</option>`).join('');
+        $('startButton').disabled=!chapters.length;
+    }
+    async function loadFollowState() {
+        $('followButton').disabled=!session;
+        if (!session) { $('followButton').textContent='Đăng nhập để theo dõi'; return; }
+        const ids=await fetch('/api/me/favorites').then(json); followed=ids.includes(bookId);
+        $('followButton').textContent=followed?'♥ Đang theo dõi':'♡ Theo dõi';
+    }
+    function renderComment(comment, children, depth=0) {
+        return `<article class="comment ${depth?'reply':''}"><div class="comment-head"><strong>${safe(comment.username)}</strong><span>${comment.rating?'★'.repeat(Number(comment.rating)):''}</span></div><p>${safe(comment.content)}</p><button class="reply-button" type="button" data-reply="${Number(comment.id)}" data-username="${safe(comment.username)}">↩ Phản hồi</button>${children}</article>`;
+    }
+    async function loadComments() {
+        const comments=await fetch(`/api/books/${bookId}/comments`).then(json);
+        const map=new Map(comments.map(item=>[Number(item.id),{...item,children:[]}]));
+        const roots=[];
+        for(const item of map.values()) {
+            const parent=map.get(Number(item.parentCommentId));
+            if(parent) parent.children.push(item); else roots.push(item);
+        }
+        function tree(item,depth=0) { return renderComment(item,item.children.map(child=>tree(child,depth+1)).join(''),depth); }
+        $('comments').innerHTML=roots.length?roots.map(item=>tree(item)).join(''):'<div class="empty">Hãy là người đầu tiên chia sẻ cảm nhận về bộ truyện này.</div>';
+    }
+    function beginReply(id,username) {
+        replyTo=id; $('replyingTo').textContent=`Đang phản hồi @${username}`;
+        $('replyingTo').hidden=false; $('cancelReply').hidden=false; $('commentText').focus();
+    }
+    function cancelReply() { replyTo=null; $('replyingTo').hidden=true; $('cancelReply').hidden=true; }
+    async function setFollow() {
+        if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
+        try{
+            const response=await request(followed?`/api/me/favorites/${bookId}`:'/api/me/favorites',{method:followed?'DELETE':'POST',...(followed?{}:{body:JSON.stringify({bookId})})});
+            await json(response); followed=!followed; $('followButton').textContent=followed?'♥ Đang theo dõi':'♡ Theo dõi';
+        }catch(error){reportError(error.message);}
+    }
+    async function openChapter(index) {
+        if(index<0||index>=chapters.length)return;
+        chapterIndex=index; const chapter=chapters[index];
+        $('readerTitle').textContent=book.title; $('readerChapter').textContent=`Chương ${chapter.chapterNumber} · ${chapter.title||''}`;
+        $('readerSelect').value=String(index);
+        if(book.storyType==='NOVEL') $('readerBody').innerHTML=`<article class="novel">${safe(chapter.content)}</article>`;
+        else {
+            const candidates=Array.isArray(chapter.images)?chapter.images:String(chapter.content||'').split(String.fromCharCode(10)).flatMap(line=>line.split(',')).map(value=>value.trim());
+            const images=candidates.filter(value=>{try{return ['http:','https:'].includes(new URL(value).protocol);}catch{return false;}});
+            $('readerBody').innerHTML=images.length?images.map((src,i)=>`<img src="${safe(imageUrl(src))}" alt="Trang ${i+1}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">`).join(''):`<p class="novel">${safe(chapter.content||'Chương này chưa có nội dung.')}</p>`;
+        }
+        $('reader').classList.add('open'); $('readerBody').scrollTop=0;
+        if(session) {
+            try { await json(await request('/api/me/history',{method:'POST',body:JSON.stringify({bookId,chapterNumber:chapter.chapterNumber})})); }
+            catch(error){console.error('Không thể lưu lịch sử đọc:',error);}
+        }
+    }
+    $('followButton').addEventListener('click',setFollow);
+    $('startButton').addEventListener('click',()=>openChapter(0));
+    $('chapterList').addEventListener('click',event=>{const button=event.target.closest('[data-chapter]');if(button)openChapter(Number(button.dataset.chapter));});
+    $('comments').addEventListener('click',event=>{const button=event.target.closest('[data-reply]');if(button){if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}beginReply(Number(button.dataset.reply),button.dataset.username);}});
+    $('cancelReply').addEventListener('click',cancelReply);
+    $('commentForm').addEventListener('submit',async event=>{
+        event.preventDefault();if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
+        const content=$('commentText').value.trim();if(!content)return;
+        try{
+            const response=await request(`/api/books/${bookId}/comments`,{method:'POST',body:JSON.stringify({content,rating:replyTo?null:Number($('rating').value),parentCommentId:replyTo})});
+            await json(response);$('commentText').value='';cancelReply();await loadComments();
+        }catch(error){reportError(error.message);}
+    });
+    $('readerSelect').addEventListener('change',()=>openChapter(Number($('readerSelect').value)));
+    $('prevChapter').addEventListener('click',()=>openChapter(chapterIndex-1));
+    $('nextChapter').addEventListener('click',()=>openChapter(chapterIndex+1));
+    $('closeReader').addEventListener('click',()=>$('reader').classList.remove('open'));
+    initialize();
+</script>
+</body>
+</html>

@@ -39,6 +39,7 @@ public class ReaderFavorite {
         this.bookId = bookId;
     }
 
+    public String getUsername() { return username; }
     public Integer getBookId() { return bookId; }
     public Instant getCreatedAt() { return createdAt; }
 }

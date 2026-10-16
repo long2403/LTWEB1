@@ -3,6 +3,10 @@ package com.example.lab1.controller;
 import com.example.lab1.entity.Chapter;
 import com.example.lab1.repository.ChapterRepository;
 import com.example.lab1.repository.BookRepository;
+import com.example.lab1.entity.ReaderFavorite;
+import com.example.lab1.entity.ReaderNotification;
+import com.example.lab1.repository.ReaderFavoriteRepository;
+import com.example.lab1.repository.ReaderNotificationRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,10 +26,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChapterController {
     private final ChapterRepository chapters;
     private final BookRepository books;
+    private final ReaderFavoriteRepository favorites;
+    private final ReaderNotificationRepository notifications;
 
-    public ChapterController(ChapterRepository chapters, BookRepository books) {
+    public ChapterController(
+        ChapterRepository chapters,
+        BookRepository books,
+        ReaderFavoriteRepository favorites,
+        ReaderNotificationRepository notifications
+    ) {
         this.chapters = chapters;
         this.books = books;
+        this.favorites = favorites;
+        this.notifications = notifications;
     }
 
     @PostMapping
@@ -41,7 +54,20 @@ public class ChapterController {
         chapter.setChapterNumber(request.chapterNumber());
         chapter.setTitle(request.title().trim());
         chapter.setContent(request.content().trim());
-        return chapters.save(chapter);
+        Chapter saved = chapters.save(chapter);
+        String storyTitle = books.findById(saved.getBookId()).orElseThrow().getTitle();
+        favorites.findByBookId(saved.getBookId()).stream()
+            .map(ReaderFavorite::getUsername)
+            .distinct()
+            .forEach(username -> notifications.save(new ReaderNotification(
+                username,
+                "SYSTEM",
+                "NEW_CHAPTER",
+                storyTitle + " vừa có chương mới: " + saved.getTitle(),
+                saved.getBookId(),
+                null
+            )));
+        return saved;
     }
 
     @org.springframework.web.bind.annotation.PutMapping("/{id}")

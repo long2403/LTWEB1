@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, Integer> {
     List<ReadingHistory> findTop20ByUsernameOrderByUpdatedAtDesc(String username);
+    void deleteByBookId(Integer bookId);
     Optional<ReadingHistory> findByUsernameAndBookId(String username, Integer bookId);
 }

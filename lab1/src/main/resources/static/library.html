@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tủ sách của tôi | Truyện Mộc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#17243a;--muted:#718096;--paper:#f5f8fc;--line:#e4ebf4;--accent:#3478f6}
+        *{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--paper);font:14px/1.5 "DM Sans",sans-serif}
+        a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:0}
+        header{height:68px;padding:0 max(20px,calc((100vw - 1120px)/2));display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}
+        .logo{font:700 22px "Playfair Display",serif;color:#1d3559}.back{color:#526783;font-weight:700}
+        main{max-width:1120px;margin:42px auto;padding:0 20px}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:11px}
+        h1{font:700 36px "Playfair Display",serif;margin:8px 0}.intro{color:var(--muted);margin:0 0 25px}
+        .tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow:auto}
+        .tab{padding:12px 16px;background:transparent;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent}
+        .tab.active{color:var(--accent);font-weight:700;border-color:var(--accent)}
+        .panel{display:none}.panel.active{display:block}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:17px}
+        .book{overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:12px}
+        .cover{height:220px;background:#eaf3ff}.cover img{width:100%;height:100%;object-fit:cover}
+        .body{padding:13px}.body h2{font-size:15px;margin:0 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .muted{color:var(--muted);font-size:12px}.actions{display:flex;gap:8px;margin-top:12px}
+        .action{flex:1;text-align:center;padding:8px;color:#2459aa;background:#edf4ff;border-radius:7px;font-weight:700}
+        .empty,.error{padding:24px;background:white;border:1px dashed var(--line);border-radius:10px;color:var(--muted)}
+        .notification{display:flex;justify-content:space-between;gap:14px;padding:16px;background:white;border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+        .notification.unread{border-left:4px solid var(--accent);background:#fafdff}
+        .notification p{margin:0 0 5px}.notification small{color:var(--muted)}.notification button{background:none;color:var(--accent);font-weight:700}
+        @media(max-width:600px){main{margin:25px auto}h1{font-size:29px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cover{height:180px}}
+    </style>
+</head>
+<body>
+<header><a class="logo" href="/">Truyện Mộc</a><a class="back" href="/">← Trang chủ</a></header>
+<main>
+    <div class="eyebrow">Không gian riêng</div>
+    <h1>Tủ sách của tôi</h1>
+    <p class="intro">Theo dõi truyện yêu thích, tiếp tục chương đang đọc và xem thông báo mới.</p>
+    <div id="pageMessage" class="error" role="alert" hidden></div>
+    <nav class="tabs" aria-label="Tủ sách">
+        <button class="tab active" data-panel="following">Đang theo dõi</button>
+        <button class="tab" data-panel="history">Lịch sử đọc</button>
+        <button class="tab" data-panel="notifications">Thông báo <span id="unreadCount"></span></button>
+    </nav>
+    <section class="panel active" id="following"><div class="grid" id="followGrid"></div></section>
+    <section class="panel" id="history"><div class="grid" id="historyGrid"></div></section>
+    <section class="panel" id="notifications"><div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="action" id="readAll" style="flex:0 0 auto">Đánh dấu đã đọc</button></div><div id="notificationList"></div></section>
+</main>
+<script>
+    const $ = id => document.getElementById(id);
+    const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const cover = value => {
+        try { const url = new URL(value || '/book-placeholder.svg', location.origin); return ['http:','https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg'; }
+        catch { return '/book-placeholder.svg'; }
+    };
+    async function csrf() {
+        const response = await fetch('/api/auth/csrf');
+        if (!response.ok) throw new Error('Không thể xác nhận yêu cầu bảo mật.');
+        const token = document.cookie.split('; ').find(value => value.startsWith('XSRF-TOKEN='));
+        if (!token) throw new Error('Thiếu mã bảo mật. Hãy tải lại trang.');
+        return decodeURIComponent(token.slice('XSRF-TOKEN='.length));
+    }
+    async function request(url, options = {}) {
+        const headers = new Headers(options.headers || {});
+        if (options.method && !['GET','HEAD','OPTIONS'].includes(options.method.toUpperCase())) headers.set('X-XSRF-TOKEN', await csrf());
+        return fetch(url, {...options, headers, credentials:'same-origin'});
+    }
+    async function json(response) {
+        if (response.ok) return response.json();
+        if (response.status === 401 || response.status === 403) location.assign('/login.html');
+        let message = `Yêu cầu lỗi (${response.status}).`;
+        try { const body = await response.json(); message = body.detail || body.message || message; } catch {}
+        throw new Error(message);
+    }
+    function renderBooks(container, items, historyMode = false) {
+        if (!items.length) { container.innerHTML = '<div class="empty">Chưa có truyện nào ở đây. Hãy khám phá thư viện nhé.</div>'; return; }
+        container.innerHTML = items.map(item => `
+            <article class="book"><a href="/book.html?id=${Number(item.id)}"><div class="cover"><img src="${safe(cover(item.coverUrl))}" alt="Bìa ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
+            <div class="body"><h2 title="${safe(item.title)}">${safe(item.title)}</h2><div class="muted">${historyMode ? `Đang đọc chương ${Number(item.chapterNumber)}` : `${safe(item.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh')} · ${Number(item.views || 0).toLocaleString('vi')} lượt xem`}</div>
+            <div class="actions"><a class="action" href="/book.html?id=${Number(item.id)}${historyMode ? `&chapter=${Number(item.chapterNumber)}` : ''}">${historyMode ? 'Đọc tiếp' : 'Xem truyện'}</a></div></div></article>`).join('');
+    }
+    function renderNotifications(items) {
+        $('unreadCount').textContent = items.filter(item => !item.read).length ? `(${items.filter(item => !item.read).length})` : '';
+        $('notificationList').innerHTML = items.length ? items.map(item => `
+            <article class="notification ${item.read ? '' : 'unread'}">
+                <div><p><a href="${item.bookId ? `/book.html?id=${Number(item.bookId)}` : '/'}">${safe(item.message)}</a></p><small>${safe(item.actor)} · ${item.createdAt ? new Date(item.createdAt).toLocaleString('vi') : ''}</small></div>
+                ${item.read ? '' : `<button type="button" data-read="${Number(item.id)}">Đã đọc</button>`}
+            </article>`).join('') : '<div class="empty">Chưa có thông báo. Truyện mới và phản hồi sẽ xuất hiện ở đây.</div>';
+    }
+    async function initialize() {
+        try {
+            const account = await json(await fetch('/api/auth/me'));
+            if (!account.authenticated) { location.replace('/login.html?return=%2Flibrary.html'); return; }
+            const [favs, history, books, notifications] = await Promise.all([
+                fetch('/api/me/favorites').then(json),
+                fetch('/api/me/history').then(json),
+                fetch('/api/books').then(json),
+                fetch('/api/me/notifications').then(json)
+            ]);
+            const byId = new Map(books.map(book => [Number(book.id), book]));
+            renderBooks($('followGrid'), favs.map(id => byId.get(Number(id))).filter(Boolean));
+            renderBooks($('historyGrid'), history.map(item => ({...byId.get(Number(item.bookId)), chapterNumber:item.chapterNumber})).filter(item => item.id), true);
+            renderNotifications(notifications);
+            if (location.hash === '#notifications') document.querySelector('[data-panel="notifications"]').click();
+        } catch (error) {
+            $('pageMessage').textContent = error.message || 'Không tải được tủ sách.';
+            $('pageMessage').hidden = false;
+        }
+    }
+    document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item === button));
+        document.querySelectorAll('.panel').forEach(panel => panel.classList.toggle('active', panel.id === button.dataset.panel));
+    }));
+    $('notificationList').addEventListener('click', async event => {
+        const button = event.target.closest('[data-read]');
+        if (!button) return;
+        try {
+            await json(await request(`/api/me/notifications/${Number(button.dataset.read)}/read`, {method:'POST'}));
+            await initialize();
+        } catch (error) { $('pageMessage').textContent = error.message; $('pageMessage').hidden = false; }
+    });
+    $('readAll').addEventListener('click', async () => {
+        try { await json(await request('/api/me/notifications/read-all', {method:'POST'})); await initialize(); }
+        catch (error) { $('pageMessage').textContent = error.message; $('pageMessage').hidden = false; }
+    });
+    initialize();
+</script>
+</body>
+</html>

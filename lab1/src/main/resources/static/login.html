@@ -162,6 +162,14 @@
                 showMessage(result.message, true);
                 return;
             }
+            const returnTo = new URLSearchParams(location.search).get('return');
+            if (returnTo) {
+                const destination = new URL(returnTo, location.origin);
+                if (destination.origin === location.origin && destination.pathname !== '/login.html') {
+                    location.assign(`${destination.pathname}${destination.search}${destination.hash}`);
+                    return;
+                }
+            }
             location.assign(result.role === 'ADMIN' ? '/admin.html' : '/');
         } catch (error) {
             showMessage(error.message || 'Không kết nối được máy chủ. Vui lòng thử lại.');

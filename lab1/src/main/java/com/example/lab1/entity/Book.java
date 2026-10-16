@@ -41,6 +41,13 @@ public class Book {
     private String status = "Đang ra";
     private Integer views = 0;
 
+    @Size(max = 20)
+    @Column(name = "story_type", length = 20)
+    private String storyType = "MANGA";
+
+    @Column(nullable = false)
+    private boolean recommended = false;
+
     public Book() {
     }
 
@@ -60,4 +67,8 @@ public class Book {
     public void setStatus(String status) { this.status = status; }
     public Integer getViews() { return views; }
     public void setViews(Integer views) { this.views = views; }
+    public String getStoryType() { return storyType == null ? "MANGA" : storyType; }
+    public void setStoryType(String storyType) { this.storyType = storyType; }
+    public boolean isRecommended() { return recommended; }
+    public void setRecommended(boolean recommended) { this.recommended = recommended; }
 }

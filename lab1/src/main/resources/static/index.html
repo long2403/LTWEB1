@@ -118,6 +118,38 @@
         #commentForm { display: flex; gap: 10px; margin-top: 15px; }
         #commentText { flex-grow: 1; padding: 8px 12px; border: 1px solid var(--line); border-radius: 5px; }
 
+        .feature-section { margin: 32px 0; }
+        .feature-section .section-head { margin: 0 0 15px; }
+        .feature-section .grid { grid-template-columns: repeat(auto-fill,minmax(155px,1fr)); gap: 14px; }
+        .feature-section .cover { height: 205px; }
+        .feature-section .book-info { padding: 11px; }
+        .feature-section .book h3 { font-size: 13px; }
+        .feature-section .read-btn { display: block; }
+        .chat-launch { position: fixed; right: 22px; bottom: 22px; z-index: 30; width: 58px; height: 58px; color: #fff; background: linear-gradient(145deg,#5b9bff,#2863d8); border-radius: 50%; box-shadow: 0 10px 30px #2863d866; font-size: 25px; }
+        .chat-panel { position: fixed; right: 22px; bottom: 92px; z-index: 31; width: min(370px,calc(100vw - 28px)); height: min(520px,calc(100dvh - 120px)); display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 18px 50px #17243a33; }
+        .chat-panel[hidden] { display: none; }
+        .chat-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; color: #fff; background: #1c3d6e; }
+        .chat-head strong { font-size: 15px; }.chat-head button { color: #fff; background: transparent; font-size: 20px; }
+        .chat-messages { overflow: auto; padding: 12px; background: #f7f9fc; }
+        .chat-message { max-width: 90%; margin: 0 0 10px; padding: 9px 11px; background: #fff; border: 1px solid var(--line); border-radius: 11px; overflow-wrap: anywhere; }
+        .chat-message.mine { margin-left: auto; background: #edf4ff; border-color: #dceaff; }
+        .chat-message strong { display: block; color: #2459aa; font-size: 11px; }
+        .chat-message p { margin: 3px 0; white-space: pre-wrap; }
+        .chat-message img { display: block; max-width: 210px; max-height: 220px; border-radius: 7px; margin-top: 5px; }
+        .chat-time { color: var(--muted); font-size: 10px; }
+        .chat-form { padding: 10px; border-top: 1px solid var(--line); }
+        .chat-form textarea { width: 100%; min-height: 50px; max-height: 90px; resize: vertical; padding: 8px; border: 1px solid var(--line); border-radius: 8px; }
+        .chat-tools { display: flex; align-items: center; gap: 6px; margin-top: 7px; }
+        .chat-tools button { padding: 7px 9px; color: #315d99; background: #edf4ff; border-radius: 7px; }
+        .chat-tools .send { margin-left: auto; color: white; background: var(--accent); font-weight: 700; }
+        .chat-login { padding: 10px; color: #8a4a08; background: #fff7df; border-radius: 7px; font-size: 12px; }
+        .notification-link { position: relative; }
+        .notification-count { color: #fff; background: #e54c68; border-radius: 12px; padding: 1px 6px; font-size: 10px; }
+        .pagination { display:flex; justify-content:center; align-items:center; gap:16px; margin:24px 0 12px; }
+        .pagination button { padding:9px 15px; color:#2459aa; background:#edf4ff; border:1px solid #dceaff; border-radius:8px; font-weight:700; }
+        .pagination button:disabled { opacity:.45; cursor:not-allowed; }
+        .pagination span { color:var(--muted); font-weight:600; }
+
         footer { margin-top: 60px; padding: 30px 0; border-top: 1px solid var(--line); text-align: center; color: var(--muted); }
 
         @media(max-width: 650px) {
@@ -154,6 +186,8 @@
         <nav class="nav">
             <a href="#library">Thư viện</a>
             <a href="#genres">Thể loại</a>
+            <a href="/library.html">Tủ sách</a>
+            <a class="notification-link" href="/library.html#notifications" title="Thông báo">Thông báo <span id="notificationCount" class="notification-count" hidden>0</span></a>
             <a class="account" id="accountLink" href="/login.html">Đăng nhập</a>
         </nav>
     </header>
@@ -173,6 +207,23 @@
             </div>
         </section>
 
+        <section class="feature-section">
+            <div class="section-head"><div><h2>Truyện được đề cử</h2><p>Những câu chuyện nổi bật từ Truyện Mộc</p></div></div>
+            <div class="grid" id="recommendedBooks"></div>
+        </section>
+        <section class="feature-section">
+            <div class="section-head"><div><h2>Truyện mới cập nhật</h2><p>Khám phá các bộ truyện vừa có trong thư viện</p></div></div>
+            <div class="grid" id="newBooks"></div>
+        </section>
+        <section class="feature-section">
+            <div class="section-head"><div><h2>Truyện tranh được đọc nhiều</h2><p>Manga và webtoon nổi bật</p></div></div>
+            <div class="grid" id="mangaBooks"></div>
+        </section>
+        <section class="feature-section">
+            <div class="section-head"><div><h2>Truyện chữ</h2><p>Thưởng thức những câu chuyện bằng con chữ</p></div></div>
+            <div class="grid" id="novelBooks"></div>
+        </section>
+
         <!-- Main Library -->
         <section id="library">
             <div class="section-head">
@@ -187,6 +238,9 @@
                     </label>
                     <select class="select" id="statusFilter" aria-label="Lọc theo trạng thái">
                         <option value="all">Mọi trạng thái</option>
+                    </select>
+                    <select class="select" id="storyTypeFilter" aria-label="Lọc theo loại truyện">
+                        <option value="all">Mọi loại truyện</option><option value="MANGA">Truyện tranh</option><option value="NOVEL">Truyện chữ</option>
                     </select>
                     <select class="select" id="sortOrder" aria-label="Sắp xếp truyện">
                         <option value="popular">Phổ biến</option>
@@ -206,6 +260,11 @@
             <div class="grid" id="books">
                 <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted)">Đang tải thư viện...</div>
             </div>
+            <nav id="pagination" class="pagination" aria-label="Phân trang thư viện" hidden>
+                <button type="button" id="previousPage">← Trước</button>
+                <span id="pageStatus" aria-live="polite"></span>
+                <button type="button" id="nextPage">Tiếp →</button>
+            </nav>
 
             <!-- Reading History -->
             <div class="continue" id="historySection" hidden>
@@ -293,15 +352,28 @@
         </div>
     </div>
 
+    <button type="button" id="chatLaunch" class="chat-launch" aria-label="Mở nhóm chat">✦</button>
+    <section id="chatPanel" class="chat-panel" aria-label="Nhóm chat" hidden>
+        <div class="chat-head"><div><strong>Góc giao lưu</strong><div style="font-size:11px;opacity:.8">Cộng đồng độc giả Truyện Mộc</div></div><button type="button" id="closeChat" aria-label="Đóng nhóm chat">×</button></div>
+        <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+        <form id="chatForm" class="chat-form">
+            <div id="chatLogin" class="chat-login" hidden>Đăng nhập để gửi tin nhắn và ảnh. <a href="/login.html"><strong>Đăng nhập</strong></a></div>
+            <textarea id="chatText" maxlength="2000" placeholder="Viết lời nhắn..." aria-label="Tin nhắn"></textarea>
+            <div class="chat-tools"><button type="button" id="emojiButton" aria-label="Chèn biểu cảm">😊</button><button type="button" id="imageButton">＋ Ảnh</button><input id="chatImage" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden><button type="submit" class="send">Gửi</button></div>
+            <div id="imagePreview" style="font-size:11px;color:var(--muted);margin-top:4px" hidden></div>
+        </form>
+    </section>
+
     <script>
         const API = '/api/books';
         let books = [], currentBook = null, currentChapters = [], currentIndex = 0, genre = 'all';
-        let selectedStatus = 'all';
+        let selectedStatus = 'all', currentPage = 0, totalPages = 0, totalBooks = 0, genres = [], searchTimer = null;
+        const pageSize = 12;
         let session = null, savedFavoriteIds = [], readingHistory = [];
+        let chatAfterId = 0, chatTimer = null, pendingChatImage = null;
 
         const $ = id => document.getElementById(id);
         const safe = v => String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-        const normalize = value => String(value || '').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
         const coverImage = value => {
             const fallback = '/book-placeholder.svg';
             if (!value) return fallback;
@@ -342,6 +414,7 @@
                 const user = await response.json();
                 session = user.authenticated ? user : null;
                 updateAccount();
+                if (session) refreshNotificationCount();
                 if (session) {
                     try {
                         const [favoritesResponse, historyResponse] = await Promise.all([
@@ -383,21 +456,44 @@
                 link.href = '/login.html';
                 link.onclick = null;
             }
+            $('chatLogin').hidden = Boolean(session);
+            $('chatText').disabled = !session;
+            $('imageButton').disabled = !session;
+            $('emojiButton').disabled = !session;
+            $('chatForm').querySelector('button[type="submit"]').disabled = !session;
         }
 
         async function loadBooks() {
             try {
-                const res = await fetch(API);
+                const params = new URLSearchParams({
+                    page: String(currentPage),
+                    size: String(pageSize),
+                    sort: $('sortOrder').value
+                });
+                const search = $('search').value.trim();
+                const storyType = $('storyTypeFilter').value;
+                if (search) params.set('search', search);
+                if (genre !== 'all') params.set('genre', genre);
+                if (selectedStatus !== 'all') params.set('status', selectedStatus);
+                if (storyType !== 'all') params.set('storyType', storyType);
+                const res = await fetch(`${API}/page?${params}`);
                 if (!res.ok) throw new Error(`API responded with ${res.status}`);
                 const data = await res.json();
-                if (!Array.isArray(data)) throw new Error('Book API returned an invalid response');
-                books = data;
+                if (!Array.isArray(data.content)) throw new Error('Book API returned an invalid page response');
+                books = data.content;
+                currentPage = data.number;
+                totalPages = data.totalPages;
+                totalBooks = data.totalElements;
+                const genreResponse = await fetch(`${API}/genres`);
+                if (!genreResponse.ok) throw new Error(`Genre API responded with ${genreResponse.status}`);
+                genres = await genreResponse.json();
                 renderGenreFilters();
                 renderStatusFilter();
-                $('storyCount').textContent = books.length.toLocaleString('vi');
-                $('genreCount').textContent = new Set(books.map(book => String(book.genre || '').trim()).filter(Boolean)).size.toLocaleString('vi');
+                $('storyCount').textContent = totalBooks.toLocaleString('vi');
+                $('genreCount').textContent = genres.length.toLocaleString('vi');
                 render();
                 showHistory();
+                loadHighlights();
             } catch (e) {
                 console.error('Không thể tải thư viện truyện:', e);
                 $('resultCount').textContent = 'Chưa thể tải thư viện truyện.';
@@ -405,9 +501,52 @@
             }
         }
 
+        function miniCards(items, targetId) {
+            const target = $(targetId);
+            target.innerHTML = items.length ? items.map(book => `
+                <article class="book">
+                    <a href="/book.html?id=${Number(book.id)}"><div class="cover"><img src="${safe(coverImage(book.coverUrl))}" alt="Bìa ${safe(book.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
+                    <div class="book-info"><h3 title="${safe(book.title)}">${safe(book.title)}</h3>
+                        <div class="meta"><span>${safe(book.genre || (book.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh'))}</span><span>◉ ${Number(book.views || 0).toLocaleString('vi')}</span></div>
+                        <a class="read-btn" href="/book.html?id=${Number(book.id)}">Xem chi tiết</a>
+                    </div>
+                </article>`).join('') : '<div class="empty-state">Chưa có truyện trong mục này.</div>';
+        }
+
+        async function loadHighlights() {
+            const requests = [
+                fetch(`${API}/recommended`),
+                fetch(`${API}/new`),
+                fetch(`${API}/type/MANGA`),
+                fetch(`${API}/type/NOVEL`)
+            ];
+            try {
+                const responses = await Promise.all(requests);
+                if (responses.some(response => !response.ok)) throw new Error('Không tải được các mục truyện nổi bật.');
+                const [recommended, newest, manga, novels] = await Promise.all(responses.map(response => response.json()));
+                miniCards(recommended.slice(0, 6), 'recommendedBooks');
+                miniCards(newest.slice(0, 6), 'newBooks');
+                miniCards(manga.slice(0, 6), 'mangaBooks');
+                miniCards(novels.slice(0, 6), 'novelBooks');
+            } catch (error) {
+                console.error('Không thể tải các mục truyện nổi bật:', error);
+            }
+        }
+
+        async function refreshNotificationCount() {
+            try {
+                const response = await fetch('/api/me/notifications/unread-count', { credentials: 'same-origin' });
+                if (!response.ok) return;
+                const result = await response.json();
+                const badge = $('notificationCount');
+                badge.textContent = Number(result.count || 0) > 99 ? '99+' : String(result.count || 0);
+                badge.hidden = !Number(result.count || 0);
+            } catch (error) {
+                console.error('Không thể tải số thông báo chưa đọc:', error);
+            }
+        }
+
         function renderGenreFilters() {
-            const genres = [...new Set(books.map(book => String(book.genre || '').trim()).filter(Boolean))]
-                .sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }));
             if (genre !== 'all' && !genres.includes(genre)) genre = 'all';
             $('genres').innerHTML = [
                 { value: 'all', label: 'Tất cả' },
@@ -416,9 +555,8 @@
         }
 
         function renderStatusFilter() {
-            const statuses = [...new Set(books.map(book => String(book.status || '').trim()).filter(Boolean))]
+            const statuses = [...new Set(['Đang ra', 'Hoàn thành', 'Tạm dừng', ...books.map(book => String(book.status || '').trim()).filter(Boolean)])]
                 .sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }));
-            if (selectedStatus !== 'all' && !statuses.includes(selectedStatus)) selectedStatus = 'all';
             $('statusFilter').innerHTML = [
                 '<option value="all">Mọi trạng thái</option>',
                 ...statuses.map(status => `<option value="${safe(status)}">${safe(status)}</option>`)
@@ -431,23 +569,17 @@
             selectedStatus = 'all';
             $('search').value = '';
             $('statusFilter').value = 'all';
+            $('storyTypeFilter').value = 'all';
             renderGenreFilters();
-            render();
+            currentPage = 0;
+            loadBooks();
         }
 
         function render() {
-            const q = normalize($('search').value.trim());
-            const filtered = books.filter(book => {
-                const matchesGenre = genre === 'all' || String(book.genre || '').trim() === genre;
-                const matchesStatus = selectedStatus === 'all' || String(book.status || '').trim() === selectedStatus;
-                const searchable = normalize(`${book.title || ''} ${book.author || ''} ${book.genre || ''} ${book.description || ''}`);
-                return matchesGenre && matchesStatus && searchable.includes(q);
-            }).sort((a, b) => $('sortOrder').value === 'title'
-                ? String(a.title || '').localeCompare(String(b.title || ''), 'vi', { sensitivity: 'base' })
-                : Number(b.views || 0) - Number(a.views || 0));
-
-            $('resultCount').innerHTML = `Hiển thị <strong>${filtered.length}</strong> / ${books.length} truyện`;
-            $('books').innerHTML = filtered.length ? filtered.map(b => `
+            const start = totalBooks ? currentPage * pageSize + 1 : 0;
+            const end = Math.min((currentPage + 1) * pageSize, totalBooks);
+            $('resultCount').innerHTML = `Hiển thị <strong>${start}–${end}</strong> / ${totalBooks} truyện`;
+            $('books').innerHTML = books.length ? books.map(b => `
                 <article class="book">
                     <div class="cover">
                         <img src="${safe(coverImage(b.coverUrl))}" alt="Bìa truyện ${safe(b.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">
@@ -463,10 +595,14 @@
                             <span>${safe(b.genre || 'Chưa phân loại')}</span>
                             <span aria-label="Lượt xem">◉ ${Number(b.views || 0).toLocaleString('vi')}</span>
                         </div>
-                        <button type="button" class="read-btn" onclick="openDetail(${Number(b.id)})">Xem truyện</button>
+                        <a class="read-btn" href="/book.html?id=${Number(b.id)}">Xem chi tiết</a>
                     </div>
                 </article>
             `).join('') : '<div class="empty-state"><strong>Chưa tìm thấy truyện phù hợp</strong>Thử đổi từ khóa hoặc xóa bớt bộ lọc nhé.<br><button type="button" onclick="resetFilters()">Xóa bộ lọc</button></div>';
+            $('pagination').hidden = totalPages <= 1;
+            $('pageStatus').textContent = totalPages ? `Trang ${currentPage + 1} / ${totalPages}` : 'Không có trang nào';
+            $('previousPage').disabled = currentPage <= 0;
+            $('nextPage').disabled = currentPage >= totalPages - 1;
         }
 
         async function toggleFavorite(id) {
@@ -608,7 +744,7 @@
                     <div class="book-info">
                         <h3>${safe(item.title)}</h3>
                         <div class="author">Đang đọc: Chapter ${item.chapterNumber}</div>
-                        <button class="read-btn" onclick="openDetail(${item.bookId})">Đọc tiếp</button>
+                        <a class="read-btn" href="/book.html?id=${Number(item.bookId)}&chapter=${Number(item.chapterNumber)}">Đọc tiếp</a>
                     </div>
                 </article>
             `).join('');
@@ -630,6 +766,124 @@
                 $('comments').textContent = 'Không thể tải bình luận.';
             }
         }
+
+        function appendChatMessage(message) {
+            const container = $('chatMessages');
+            const wasNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 70;
+            const ownMessage = session && message.username === session.username;
+            const image = typeof message.imageData === 'string' && /^data:image\/(png|jpeg|gif|webp);base64,/i.test(message.imageData)
+                ? `<img src="${safe(message.imageData)}" alt="Ảnh được chia sẻ" loading="lazy">` : '';
+            container.insertAdjacentHTML('beforeend', `
+                <article class="chat-message ${ownMessage ? 'mine' : ''}">
+                    <strong>${safe(message.username)}</strong>
+                    ${message.message ? `<p>${safe(message.message)}</p>` : ''}
+                    ${image}
+                    <span class="chat-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString('vi', {hour:'2-digit',minute:'2-digit'}) : ''}</span>
+                </article>`);
+            if (wasNearBottom) container.scrollTop = container.scrollHeight;
+        }
+
+        async function loadChat(initial = false) {
+            const url = initial || !chatAfterId ? '/api/chat/messages' : `/api/chat/messages?afterId=${chatAfterId}`;
+            const response = await fetch(url, { credentials: 'same-origin' });
+            if (!response.ok) throw new Error(`Không thể tải nhóm chat (${response.status}).`);
+            const messages = await response.json();
+            if (initial || !chatAfterId) $('chatMessages').innerHTML = '';
+            messages.forEach(message => {
+                appendChatMessage(message);
+                chatAfterId = Math.max(chatAfterId, Number(message.id) || 0);
+            });
+            if (!messages.length && !chatAfterId) {
+                $('chatMessages').innerHTML = '<p class="empty-state">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện nhé!</p>';
+            }
+        }
+
+        function openChat() {
+            $('chatPanel').hidden = false;
+            if (!chatAfterId) loadChat(true).catch(error => {
+                console.error('Lỗi tải nhóm chat:', error);
+                $('chatMessages').textContent = 'Không thể tải nhóm chat. Hãy thử đóng và mở lại.';
+            });
+            if (!chatTimer) chatTimer = window.setInterval(() => {
+                if (!$('chatPanel').hidden) loadChat().catch(error => console.error('Lỗi đồng bộ nhóm chat:', error));
+            }, 5000);
+            if (session) $('chatText').focus();
+        }
+
+        function closeChat() {
+            $('chatPanel').hidden = true;
+            if (chatTimer) {
+                window.clearInterval(chatTimer);
+                chatTimer = null;
+            }
+        }
+
+        $('chatLaunch').addEventListener('click', openChat);
+        $('closeChat').addEventListener('click', closeChat);
+        $('imageButton').addEventListener('click', () => $('chatImage').click());
+        $('emojiButton').addEventListener('click', () => {
+            const emojis = ['😊','😂','❤️','👍','🎉','✨','🥰','📚'];
+            const field = $('chatText');
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            const start = field.selectionStart;
+            const end = field.selectionEnd;
+            field.value = field.value.slice(0, start) + emoji + field.value.slice(end);
+            field.focus();
+            field.setSelectionRange(start + emoji.length, start + emoji.length);
+        });
+        $('chatImage').addEventListener('change', event => {
+            const file = event.target.files[0];
+            pendingChatImage = null;
+            $('imagePreview').hidden = true;
+            if (!file) return;
+            if (!['image/png','image/jpeg','image/gif','image/webp'].includes(file.type) || file.size > 512 * 1024) {
+                alert('Chọn ảnh PNG, JPG, GIF hoặc WebP có dung lượng tối đa 256 KB.');
+                event.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                pendingChatImage = String(reader.result);
+                $('imagePreview').textContent = `Đã chọn ảnh: ${file.name}`;
+                $('imagePreview').hidden = false;
+            };
+            reader.onerror = () => {
+                alert('Không đọc được tệp ảnh. Hãy chọn lại.');
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        });
+        $('chatForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            if (!session) { location.assign('/login.html'); return; }
+            const message = $('chatText').value.trim();
+            if (!message && !pendingChatImage) return;
+            const submit = $('chatForm').querySelector('button[type="submit"]');
+            submit.disabled = true;
+            try {
+                const response = await apiRequest('/api/chat/messages', {
+                    method: 'POST',
+                    body: JSON.stringify({message, imageData: pendingChatImage})
+                });
+                if (!response.ok) {
+                    let reason = `Không thể gửi tin nhắn (${response.status}).`;
+                    try { const body = await response.json(); reason = body.detail || body.message || reason; } catch {}
+                    throw new Error(reason);
+                }
+                const sent = await response.json();
+                appendChatMessage(sent);
+                chatAfterId = Math.max(chatAfterId, Number(sent.id) || 0);
+                $('chatText').value = '';
+                $('chatImage').value = '';
+                $('imagePreview').hidden = true;
+                pendingChatImage = null;
+            } catch (error) {
+                console.error('Lỗi gửi tin nhắn:', error);
+                alert(error.message || 'Không gửi được tin nhắn.');
+            } finally {
+                submit.disabled = !session;
+            }
+        });
 
         function closeModal(id) { $(id).hidden = true; }
         async function logout() {
@@ -672,15 +926,22 @@
         });
 
         // Event Listeners
-        $('search').oninput = render;
-        $('statusFilter').onchange = event => { selectedStatus = event.target.value; render(); };
-        $('sortOrder').onchange = render;
+        $('search').oninput = () => {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(() => { currentPage = 0; loadBooks(); }, 250);
+        };
+        $('statusFilter').onchange = event => { selectedStatus = event.target.value; currentPage = 0; loadBooks(); };
+        $('storyTypeFilter').onchange = () => { currentPage = 0; loadBooks(); };
+        $('sortOrder').onchange = () => { currentPage = 0; loadBooks(); };
+        $('previousPage').onclick = () => { if (currentPage > 0) { currentPage--; loadBooks(); $('library').scrollIntoView({behavior:'smooth'}); } };
+        $('nextPage').onclick = () => { if (currentPage + 1 < totalPages) { currentPage++; loadBooks(); $('library').scrollIntoView({behavior:'smooth'}); } };
         $('genres').onclick = event => {
             const btn = event.target.closest('.chip');
             if (!btn) return;
             genre = btn.dataset.genre;
             renderGenreFilters();
-            render();
+            currentPage = 0;
+            loadBooks();
         };
 
         loadSession().finally(loadBooks);

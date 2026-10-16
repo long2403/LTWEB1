@@ -21,6 +21,8 @@ public class Comment {
     @Column(nullable = false, length = 2000)
     private String content;
     private Integer rating;
+    @Column(name = "parent_comment_id")
+    private Integer parentCommentId;
     private Instant createdAt = Instant.now();
 
     public Integer getId() { return id; }
@@ -33,6 +35,8 @@ public class Comment {
     public void setContent(String content) { this.content = content; }
     public Integer getRating() { return rating; }
     public void setRating(Integer rating) { this.rating = rating; }
+    public Integer getParentCommentId() { return parentCommentId; }
+    public void setParentCommentId(Integer parentCommentId) { this.parentCommentId = parentCommentId; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

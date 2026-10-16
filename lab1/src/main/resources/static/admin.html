@@ -108,7 +108,7 @@
             </div>
             <section class="panel" id="catalog">
                 <div class="panel-head"><div><h2>Danh sách truyện</h2><p>Thêm, chỉnh sửa, xóa và quản lý chương.</p></div><input class="search" id="search" type="search" placeholder="Tìm theo tên hoặc tác giả..." aria-label="Tìm truyện"></div>
-                <div class="table-wrap"><table><thead><tr><th>Truyện</th><th>Tác giả</th><th>Thể loại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookTable"><tr><td colspan="5" class="empty">Đang tải dữ liệu...</td></tr></tbody></table></div>
+                <div class="table-wrap"><table><thead><tr><th>Truyện</th><th>Loại</th><th>Tác giả</th><th>Thể loại</th><th>Trạng thái</th><th>Đề cử</th><th>Thao tác</th></tr></thead><tbody id="bookTable"><tr><td colspan="7" class="empty">Đang tải dữ liệu...</td></tr></tbody></table></div>
             </section>
             <section class="panel" id="moderation">
                 <div class="panel-head"><div><h2>Kiểm duyệt bình luận</h2><p>Gỡ bình luận không phù hợp khỏi trang truyện.</p></div></div>
@@ -126,6 +126,8 @@
             <label class="field">Tác giả<input id="author" maxlength="120"></label>
             <label class="field">Thể loại<input id="genre" required maxlength="80" list="genreOptions" placeholder="Ví dụ: Fantasy"><datalist id="genreOptions"></datalist></label>
             <label class="field">Trạng thái<select id="status"><option>Đang ra</option><option>Hoàn thành</option><option>Tạm dừng</option></select></label>
+            <label class="field">Loại truyện<select id="storyType"><option value="MANGA">Truyện tranh</option><option value="NOVEL">Truyện chữ</option></select></label>
+            <label class="field"><span>Truyện đề cử</span><span style="display:flex;align-items:center;gap:8px;margin-top:12px"><input id="recommended" type="checkbox">Hiển thị trong mục đề cử</span></label>
             <label class="field full">URL ảnh bìa<input id="coverUrl" type="url" maxlength="5000" placeholder="https://..."></label>
             <label class="field full">Giới thiệu<textarea id="description" maxlength="2000"></textarea></label>
         </div>
@@ -226,6 +228,8 @@
         $('author').value = book?.author ?? '';
         $('genre').value = book?.genre ?? '';
         $('status').value = book?.status ?? 'Đang ra';
+        $('storyType').value = book?.storyType ?? 'MANGA';
+        $('recommended').checked = Boolean(book?.recommended);
         $('coverUrl').value = book?.coverUrl ?? '';
         $('description').value = book?.description ?? '';
         $('bookModal').hidden = false;
@@ -238,14 +242,16 @@
         $('bookTable').innerHTML = matches.length ? matches.map(book => `
             <tr>
                 <td><div class="book-cell"><img class="cover" src="${safe(cover(book.coverUrl))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"><span class="title">${safe(book.title)}</span></div></td>
+                <td><span class="tag">${book.storyType === 'NOVEL' ? 'Truyện chữ' : 'Truyện tranh'}</span></td>
                 <td>${safe(book.author || '—')}</td><td>${safe(book.genre || '—')}</td>
                 <td><span class="tag">${safe(book.status || 'Chưa cập nhật')}</span></td>
+                <td>${book.recommended ? '★ Có' : '—'}</td>
                 <td><div class="actions">
                     <button class="action" type="button" data-action="edit" data-id="${Number(book.id)}">Sửa</button>
                     <button class="action" type="button" data-action="chapters" data-id="${Number(book.id)}">Chương</button>
                     <button class="action delete" type="button" data-action="delete" data-id="${Number(book.id)}">Xóa</button>
                 </div></td>
-            </tr>`).join('') : '<tr><td colspan="5" class="empty">Không tìm thấy truyện phù hợp.</td></tr>';
+            </tr>            `).join('') : '<tr><td colspan="7" class="empty">Không tìm thấy truyện phù hợp.</td></tr>';
         $('genreOptions').innerHTML = [...new Set(books.map(book => book.genre).filter(Boolean))]
             .sort((a, b) => a.localeCompare(b, 'vi'))
             .map(genre => `<option value="${safe(genre)}"></option>`).join('');
@@ -346,6 +352,7 @@
         const book = {
             title: $('title').value.trim(), author: $('author').value.trim(),
             genre: $('genre').value.trim(), status: $('status').value,
+            storyType: $('storyType').value, recommended: $('recommended').checked,
             coverUrl: $('coverUrl').value.trim(), description: $('description').value.trim()
         };
         try {
