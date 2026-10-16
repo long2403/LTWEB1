@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findByBookIdOrderByCreatedAtDesc(Integer bookId);
+    List<Comment> findAllByOrderByCreatedAtDesc();
     void deleteByBookId(Integer bookId);
 }

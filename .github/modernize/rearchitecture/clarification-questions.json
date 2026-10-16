@@ -1,0 +1,622 @@
+{
+  "schema": "clarification-questions/v1",
+  "generated_at": "2026-10-16T05:39:15Z",
+  "user_input": "tôi sẽ để bạn toàn quyền làm web truyện tranh cho tôi bao gồm việc frontend, backend , admin ,đăng nhập, đăng ký bạn tự thêm chức năng kiểm tra sửa lỗi nếu chỗ nào bị lỗi",
+  "title": "Hoàn thiện nền tảng Truyện Mộc",
+  "assessment_snapshot": {
+    "intro": "Repository hiện có một ứng dụng đọc truyện Java/Spring Boot triển khai bằng Jenkins và Render, với frontend tĩnh và PostgreSQL:",
+    "bullets": [
+      "Spring Boot 3.2 và Java 17; PostgreSQL/JPA với các entity truyện, chương, bình luận và sinh viên",
+      "Frontend HTML/CSS/JavaScript tĩnh đã có thư viện, tìm kiếm/lọc, đọc chương, yêu thích/lịch sử phía trình duyệt, trang đăng nhập và trang quản trị",
+      "Backend đã có API truyện/chương; cần xác định hợp đồng API và chiến lược cập nhật dữ liệu khi bổ sung chức năng",
+      "Luồng CI/CD hiện tại là Jenkins build rồi gọi Render Deploy Hook; yêu cầu tiếp tục dùng Render, không chuyển sang máy ảo",
+      "Mục tiêu hiện tại là mở rộng ứng dụng đang có thành web đọc truyện tranh đầy đủ, không tạo dự án rewrite riêng"
+    ]
+  },
+  "proposed_outcome": "Mở rộng ứng dụng Truyện Mộc hiện có thành nền tảng đọc truyện tranh đầy đủ trên Render: giữ stack và luồng deploy hiện tại trừ khi được xác nhận khác; hoàn thiện trải nghiệm độc giả, xác thực và phân quyền backend, trang quản trị quản lý truyện/chương, lưu dữ liệu an toàn, và kiểm tra/build/test các thay đổi.",
+  "scope": [
+    "frontend",
+    "backend",
+    "generic"
+  ],
+  "status": "answered",
+  "questions": [
+    {
+      "id": "F1",
+      "kit": "frontend",
+      "field": "target.framework",
+      "title": "Frontend sử dụng công nghệ nào?",
+      "question": "Bạn muốn tiếp tục frontend HTML/CSS/JavaScript hiện có, hay chuyển sang một framework frontend?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Giữ HTML/CSS/JavaScript hiện có",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Giữ HTML/CSS/JavaScript hiện có",
+      "answer": {
+        "value": "Giữ HTML/CSS/JavaScript hiện có",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Giữ HTML/CSS/JavaScript hiện có",
+          "label": "Giữ HTML/CSS/JavaScript hiện có"
+        },
+        {
+          "value": "React 19",
+          "label": "React 19"
+        },
+        {
+          "value": "Vue 3",
+          "label": "Vue 3"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F2",
+      "kit": "frontend",
+      "field": "target.component_library",
+      "title": "Thư viện giao diện",
+      "question": "Bạn muốn dùng hệ thống component/UI nào để xây dựng giao diện?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "CSS và component tự viết, không thêm thư viện",
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": null,
+        "source": "skipped"
+      },
+      "depends_on": {
+        "question_id": "F1",
+        "visible_when": null,
+        "options_when": {
+          "Giữ HTML/CSS/JavaScript hiện có": [
+            {
+              "value": "CSS và component tự viết, không thêm thư viện",
+              "label": "CSS và component tự viết, không thêm thư viện"
+            },
+            {
+              "value": "Bootstrap 5",
+              "label": "Bootstrap 5"
+            },
+            {
+              "value": "Tailwind CSS 4",
+              "label": "Tailwind CSS 4"
+            }
+          ],
+          "React 19": [
+            {
+              "value": "shadcn/ui",
+              "label": "shadcn/ui"
+            },
+            {
+              "value": "Material UI",
+              "label": "Material UI"
+            },
+            {
+              "value": "CSS Modules",
+              "label": "CSS Modules"
+            }
+          ],
+          "Vue 3": [
+            {
+              "value": "Vuetify 3",
+              "label": "Vuetify 3"
+            },
+            {
+              "value": "PrimeVue",
+              "label": "PrimeVue"
+            },
+            {
+              "value": "CSS tự viết",
+              "label": "CSS tự viết"
+            }
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "CSS và component tự viết, không thêm thư viện",
+          "label": "CSS và component tự viết, không thêm thư viện"
+        },
+        {
+          "value": "Bootstrap 5",
+          "label": "Bootstrap 5"
+        },
+        {
+          "value": "Tailwind CSS 4",
+          "label": "Tailwind CSS 4"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F3",
+      "kit": "frontend",
+      "field": "visual.screenshots",
+      "title": "Ảnh tham khảo giao diện",
+      "question": "Bạn có ảnh chụp, thiết kế Figma hoặc đường dẫn giao diện mong muốn không? Có thể bỏ qua nếu muốn mình tự thiết kế dựa trên giao diện hiện có.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": null,
+        "source": "skipped"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F4",
+      "kit": "frontend",
+      "field": "visual.design_system",
+      "title": "Phong cách thiết kế",
+      "question": "Có thương hiệu, màu sắc hoặc design system nào cần tuân theo không?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "Tiếp tục phong cách trắng-xanh tối giản hiện tại và hoàn thiện đồng bộ",
+      "default": "match existing pixel-by-pixel using extracted CSS custom properties",
+      "prefilled": true,
+      "prefilled_value": "Tiếp tục phong cách trắng-xanh tối giản hiện tại và hoàn thiện đồng bộ",
+      "answer": {
+        "value": "Tiếp tục phong cách trắng-xanh tối giản hiện tại và hoàn thiện đồng bộ",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Tiếp tục phong cách trắng-xanh tối giản hiện tại và hoàn thiện đồng bộ",
+          "label": "Tiếp tục phong cách trắng-xanh tối giản hiện tại và hoàn thiện đồng bộ"
+        },
+        {
+          "value": "Tự thiết kế design system mới, ưu tiên nhận diện riêng cho Truyện Mộc",
+          "label": "Tự thiết kế mới, ưu tiên nhận diện riêng cho Truyện Mộc"
+        },
+        {
+          "value": "Tôi sẽ cung cấp Figma/brand guideline",
+          "label": "Tôi sẽ cung cấp Figma hoặc brand guideline"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F5",
+      "kit": "frontend",
+      "field": "compliance.accessibility",
+      "title": "Khả năng truy cập",
+      "question": "Bạn muốn nhắm tới tiêu chuẩn hỗ trợ truy cập nào?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "WCAG 2.1 AA",
+      "default": "WCAG 2.1 AA",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "WCAG 2.1 AA",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "WCAG 2.1 AA",
+          "label": "WCAG 2.1 AA"
+        },
+        {
+          "value": "WCAG 2.2 AA",
+          "label": "WCAG 2.2 AA"
+        },
+        {
+          "value": "Chưa cần tiêu chuẩn cụ thể",
+          "label": "Chưa cần tiêu chuẩn cụ thể"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F6",
+      "kit": "frontend",
+      "field": "compatibility.browsers",
+      "title": "Trình duyệt hỗ trợ",
+      "question": "Những trình duyệt hoặc thiết bị nào cần hỗ trợ?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": "Trình duyệt hiện đại: Chrome, Edge, Firefox, Safari phiên bản mới",
+      "default": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Trình duyệt hiện đại: Chrome, Edge, Firefox, Safari phiên bản mới",
+          "label": "Trình duyệt hiện đại: Chrome, Edge, Firefox, Safari phiên bản mới"
+        },
+        {
+          "value": "Bao gồm cả trình duyệt/thiết bị cũ (ghi rõ ở Other)",
+          "label": "Bao gồm cả trình duyệt/thiết bị cũ"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F7",
+      "kit": "frontend",
+      "field": "responsive.breakpoints",
+      "title": "Thiết kế responsive",
+      "question": "Giao diện nên thích ứng với màn hình nào?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "Mobile-first, hỗ trợ điện thoại, tablet và desktop",
+      "default": "mobile-first using existing breakpoints detected from codebase",
+      "prefilled": true,
+      "prefilled_value": "Mobile-first, hỗ trợ điện thoại, tablet và desktop",
+      "answer": {
+        "value": "Mobile-first, hỗ trợ điện thoại, tablet và desktop",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Mobile-first, hỗ trợ điện thoại, tablet và desktop",
+          "label": "Mobile-first, hỗ trợ điện thoại, tablet và desktop"
+        },
+        {
+          "value": "Ưu tiên desktop",
+          "label": "Ưu tiên desktop"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F8",
+      "kit": "frontend",
+      "field": "i18n.locales",
+      "title": "Ngôn ngữ giao diện",
+      "question": "Web cần hỗ trợ ngôn ngữ nào?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": null,
+      "default": "preserve current locales; keep existing i18n library if present",
+      "prefilled": true,
+      "prefilled_value": "Tiếng Việt (giao diện hiện tại)",
+      "answer": {
+        "value": "Tiếng Việt (giao diện hiện tại)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F9",
+      "kit": "frontend",
+      "field": "state_mgmt.preference",
+      "title": "Quản lý trạng thái frontend",
+      "question": "Bạn có ưu tiên cách lưu trạng thái phía trình duyệt không?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": "Giữ JavaScript hiện tại, chuyển dữ liệu quan trọng sang backend",
+      "default": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "prefilled": true,
+      "prefilled_value": "Giao diện hiện lưu yêu thích/lịch sử bằng localStorage và gọi backend bằng fetch",
+      "answer": {
+        "value": "Giao diện hiện lưu yêu thích/lịch sử bằng localStorage và gọi backend bằng fetch",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Giữ JavaScript hiện tại, chuyển dữ liệu quan trọng sang backend",
+          "label": "Giữ JavaScript hiện tại, chuyển dữ liệu quan trọng sang backend"
+        },
+        {
+          "value": "Dùng thư viện state tương ứng với framework đã chọn",
+          "label": "Dùng thư viện state tương ứng với framework đã chọn"
+        },
+        {
+          "value": "Không có ưu tiên",
+          "label": "Không có ưu tiên"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F10",
+      "kit": "frontend",
+      "field": "routing.preference",
+      "title": "Điều hướng trang",
+      "question": "Bạn có muốn dùng thư viện điều hướng frontend riêng không?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": "Giữ điều hướng URL/link hiện tại của Spring Boot",
+      "default": "use the de-facto router for the chosen target framework",
+      "prefilled": true,
+      "prefilled_value": "Ứng dụng hiện dùng static pages và URL endpoint Spring Boot",
+      "answer": {
+        "value": "Ứng dụng hiện dùng static pages và URL endpoint Spring Boot",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Giữ điều hướng URL/link hiện tại của Spring Boot",
+          "label": "Giữ điều hướng URL/link hiện tại của Spring Boot"
+        },
+        {
+          "value": "Dùng router của framework frontend đã chọn",
+          "label": "Dùng router của framework đã chọn"
+        },
+        {
+          "value": "Không có ưu tiên",
+          "label": "Không có ưu tiên"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B1",
+      "kit": "backend",
+      "field": "target.framework",
+      "title": "Backend và phiên bản",
+      "question": "Bạn muốn giữ Spring Boot hiện tại hay nâng/chuyển backend sang nền tảng khác?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Giữ Java 17 và Spring Boot 3.2 hiện tại",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Project pom.xml đang dùng Java 17 và Spring Boot 3.2.0",
+      "answer": {
+        "value": "Project pom.xml đang dùng Java 17 và Spring Boot 3.2.0",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Giữ Java 17 và Spring Boot 3.2 hiện tại",
+          "label": "Giữ Java 17 và Spring Boot 3.2 hiện tại"
+        },
+        {
+          "value": "Nâng lên phiên bản Spring Boot ổn định mới hơn",
+          "label": "Nâng lên phiên bản Spring Boot ổn định mới hơn"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B2",
+      "kit": "backend",
+      "field": "api.contract_preservation",
+      "title": "Giữ tương thích API",
+      "question": "Các API truyện/chương đang có cần tiếp tục hoạt động tương thích không?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Phải giữ nguyên API hiện có; chỉ bổ sung endpoint mới khi cần",
+      "default": "must preserve",
+      "prefilled": true,
+      "prefilled_value": "Frontend hiện tại gọi /api/books và các endpoint chương/bình luận",
+      "answer": {
+        "value": "Frontend hiện tại gọi /api/books và các endpoint chương/bình luận",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Phải giữ nguyên API hiện có; chỉ bổ sung endpoint mới khi cần",
+          "label": "Phải giữ nguyên API hiện có; chỉ bổ sung endpoint mới khi cần"
+        },
+        {
+          "value": "Có thể thay đổi API nếu cập nhật toàn bộ giao diện cùng lúc",
+          "label": "Có thể thay đổi API nếu cập nhật giao diện cùng lúc"
+        },
+        {
+          "value": "Có thể thiết kế lại API và tạo phiên bản mới",
+          "label": "Có thể thiết kế lại API và tạo phiên bản mới"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B3",
+      "kit": "backend",
+      "field": "data.migration_strategy",
+      "title": "Cập nhật dữ liệu database",
+      "question": "Khi bổ sung bảng tài khoản, yêu thích, lịch sử đọc và chức năng quản trị, nên xử lý PostgreSQL hiện tại thế nào?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Giữ database PostgreSQL Render, cập nhật schema tại chỗ và bảo toàn dữ liệu",
+      "default": "TBD / assess in research phase",
+      "prefilled": true,
+      "prefilled_value": "Render Blueprint hiện khai báo PostgreSQL và app dùng JPA; chưa có yêu cầu chuyển DB",
+      "answer": {
+        "value": "Render Blueprint hiện khai báo PostgreSQL và app dùng JPA; chưa có yêu cầu chuyển DB",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Giữ database PostgreSQL Render, cập nhật schema tại chỗ và bảo toàn dữ liệu",
+          "label": "Giữ PostgreSQL Render, cập nhật schema tại chỗ và bảo toàn dữ liệu"
+        },
+        {
+          "value": "Tạo schema mới rồi chuyển dữ liệu có kiểm soát",
+          "label": "Tạo schema mới rồi chuyển dữ liệu có kiểm soát"
+        },
+        {
+          "value": "Chưa quyết định; khảo sát dữ liệu trước khi sửa schema",
+          "label": "Chưa quyết định; khảo sát dữ liệu trước khi sửa schema"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B4",
+      "kit": "backend",
+      "field": "auth.framework",
+      "title": "Đăng nhập và bảo mật",
+      "question": "Bạn muốn triển khai xác thực và phân quyền tài khoản theo hướng nào?",
+      "importance": "recommended",
+      "impact": 5,
+      "recommended": "Spring Security, mật khẩu băm, session cookie bảo mật và vai trò USER/ADMIN",
+      "default": "preserve existing auth mechanism; detect from codebase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "preserve existing auth mechanism; detect from codebase",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Spring Security, mật khẩu băm, session cookie bảo mật và vai trò USER/ADMIN",
+          "label": "Spring Security, mật khẩu băm, session cookie bảo mật và vai trò USER/ADMIN"
+        },
+        {
+          "value": "JWT access/refresh token với role USER/ADMIN",
+          "label": "JWT access/refresh token với role USER/ADMIN"
+        },
+        {
+          "value": "Chỉ giữ đăng nhập phía trình duyệt như hiện tại",
+          "label": "Chỉ giữ đăng nhập phía trình duyệt như hiện tại"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B5",
+      "kit": "backend",
+      "field": "nfr.sla",
+      "title": "Mục tiêu vận hành",
+      "question": "Bạn có yêu cầu cụ thể về thời gian phản hồi, số người dùng đồng thời hoặc độ sẵn sàng không?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": null,
+      "default": "match current production baseline; no regression",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "match current production baseline; no regression",
+        "source": "default"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G1",
+      "kit": "generic",
+      "field": "success.definition",
+      "title": "Tiêu chí hoàn thành",
+      "question": "Theo bạn, những điều kiện nào chứng minh web truyện đã hoàn thành đúng yêu cầu?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": "feature parity with the current system; all existing user-facing behaviors preserved",
+      "prefilled": true,
+      "prefilled_value": "Hoàn thiện web đọc truyện tranh end-to-end gồm frontend, backend, admin, đăng ký/đăng nhập; các luồng chính hoạt động và đã kiểm tra/sửa lỗi; tiếp tục deploy bằng Jenkins/Render",
+      "answer": {
+        "value": "Hoàn thiện web đọc truyện tranh end-to-end gồm frontend, backend, admin, đăng ký/đăng nhập; các luồng chính hoạt động và đã kiểm tra/sửa lỗi; tiếp tục deploy bằng Jenkins/Render",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G2",
+      "kit": "generic",
+      "field": "out_of_scope",
+      "title": "Phạm vi không làm",
+      "question": "Có phần nào bạn muốn loại trừ khỏi đợt hoàn thiện này không?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "no explicit exclusions; agent will infer from project structure",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "no explicit exclusions; agent will infer from project structure",
+        "source": "default"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G3",
+      "kit": "generic",
+      "field": "existing_tests.posture",
+      "title": "Quy tắc với test hiện có",
+      "question": "Nếu phát hiện test cũ bị lỗi hoặc không phù hợp, bạn muốn xử lý thế nào?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "Tất cả test hiện có phải qua; chỉ sửa lỗi có nguyên nhân xác định",
+      "default": "must pass",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "must pass",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Tất cả test hiện có phải qua; chỉ sửa lỗi có nguyên nhân xác định",
+          "label": "Tất cả test hiện có phải qua; chỉ sửa lỗi có nguyên nhân xác định"
+        },
+        {
+          "value": "Có thể viết lại test tương đương nếu test hiện tại lỗi thời",
+          "label": "Có thể viết lại test tương đương nếu test hiện tại lỗi thời"
+        },
+        {
+          "value": "Ưu tiên viết test mới cho chức năng được bổ sung",
+          "label": "Ưu tiên viết test mới cho chức năng mới"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G5",
+      "kit": "generic",
+      "field": "constraints.additional",
+      "title": "Ràng buộc bổ sung",
+      "question": "Có ràng buộc bổ sung nào về nội dung truyện, nguồn ảnh, bản quyền, chi phí hosting, bảo mật hoặc cách vận hành không?",
+      "importance": "optional",
+      "impact": 3,
+      "recommended": null,
+      "default": "None beyond the decisions listed in this specification.",
+      "prefilled": true,
+      "prefilled_value": "None beyond the decisions listed in this specification.",
+      "answer": {
+        "value": "None beyond the decisions listed in this specification.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    }
+  ]
+}

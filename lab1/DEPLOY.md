@@ -34,6 +34,18 @@ Render truyền `DATABASE_URL` từ PostgreSQL theo khai báo `fromDatabase` tro
 
 Ứng dụng dùng Hibernate `ddl-auto=update` để cập nhật schema khi khởi động. Nếu cần dữ liệu mẫu, nạp chúng riêng vào PostgreSQL; không dựa vào `initialQuery` trong Render Blueprint.
 
+### Tài khoản và phiên đăng nhập
+
+Trong Render, mở Web Service → **Environment** và đặt:
+
+- `APP_ADMIN_USERNAME`: tên tài khoản quản trị ban đầu.
+- `APP_ADMIN_PASSWORD`: mật khẩu mạnh, tối thiểu 12 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
+- `SESSION_COOKIE_SECURE`: `true` (Blueprint đã bật cờ này cho HTTPS).
+
+Không ghi mật khẩu vào Git, `render.yaml` hoặc Jenkinsfile. Nếu thiếu cả hai biến admin, ứng dụng vẫn chạy nhưng chưa có tài khoản quản trị; nếu chỉ đặt một biến, ứng dụng dừng lúc khởi động để tránh cấu hình nửa vời. Tài khoản admin được tạo/cập nhật từ hai biến khi ứng dụng khởi động. Đăng ký độc giả tạo role `USER`; không có màn hình đăng ký công khai tài khoản admin.
+
+Khi chạy local qua HTTP, có thể để `SESSION_COOKIE_SECURE=false` (giá trị mặc định) để cookie phiên hoạt động. Render Blueprint bật `true` vì website chạy qua HTTPS.
+
 ## Kiểm tra khi lỗi
 
 - **Jenkins Build lỗi**: mở **Console Output**; bước deploy sẽ không chạy.

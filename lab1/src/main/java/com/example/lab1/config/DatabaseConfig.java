@@ -4,23 +4,28 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.sql.DataSource;
 import java.net.URI;
 
 @Configuration
+@Profile("!test")
 public class DatabaseConfig {
 
     @Bean
     @Primary
-    public DataSource dataSource() {
-        String databaseUrl = System.getenv("DATABASE_URL");
+    public DataSource dataSource(@Value("${DATABASE_URL:}") String databaseUrl) {
 
         if (databaseUrl == null || databaseUrl.isBlank()) {
-            throw new RuntimeException("❌ DATABASE_URL environment variable is missing!");
+            throw new IllegalStateException("DATABASE_URL environment variable is missing");
         }
 
         try {
+            if (databaseUrl.startsWith("jdbc:")) {
+                return DataSourceBuilder.create().url(databaseUrl).build();
+            }
             URI uri = new URI(databaseUrl);
             String userInfo = uri.getUserInfo();
             int credentialsSeparator = userInfo == null ? -1 : userInfo.indexOf(':');
@@ -41,14 +46,9 @@ public class DatabaseConfig {
             if (port <= 0) port = 5432;
 
             String jdbcUrl = String.format(
-                "jdbc:postgresql://%s:%d/%s?sslmode=require&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
+                "jdbc:postgresql://%s:%d/%s?sslmode=require&ssl=true",
                 host, port, dbName
             );
-
-            System.out.println("✅ Successfully parsed DATABASE_URL");
-            System.out.println("Host: " + host);
-            System.out.println("Port: " + port);
-            System.out.println("Database: " + dbName);
 
             return DataSourceBuilder.create()
                     .url(jdbcUrl)
@@ -58,8 +58,7 @@ public class DatabaseConfig {
                     .build();
 
         } catch (Exception e) {
-            System.err.println("❌ Failed to parse DATABASE_URL: " + e.getMessage());
-            throw new RuntimeException("Database configuration failed", e);
+            throw new IllegalStateException("Database configuration failed", e);
         }
     }
 }

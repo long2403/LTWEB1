@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "books")
@@ -15,16 +17,27 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 180)
+    @Column(nullable = false, length = 180)
     private String title;
 
+    @Size(max = 120)
+    @Column(length = 120)
     private String author;
+    @Size(max = 80)
+    @Column(length = 80)
     private String genre;
 
+    @Size(max = 2000)
     @Column(length = 2000)
     private String description;
 
+    @Size(max = 1000)
+    @Column(length = 1000)
     private String coverUrl;
+    @Size(max = 40)
+    @Column(length = 40)
     private String status = "Đang ra";
     private Integer views = 0;
 

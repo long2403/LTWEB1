@@ -1,12 +1,436 @@
 <!DOCTYPE html>
-<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Truyện Mộc | Quản trị</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"><style>
-:root{--ink:#f41414;--muted:#75818a;--line:#e4e9e9;--paper:#f3f6f5;--white:#e71c1c;--navy:#203944;--teal:#f06a16;--red:#c85858}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--paper);font:14px "DM Sans",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.side{width:238px;padding:27px 17px;color:#e01414;background:var(--navy)}.brand{display:flex;align-items:center;gap:10px;padding:0 10px 42px;color:rgb(230, 24, 24);font:700 21px "Playfair Display",serif}.mark{display:grid;place-items:center;width:34px;height:34px;color:var(--navy);background:#d8ac67;border-radius:50%}.label{padding:0 12px 10px;color:#f01717;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.nav{display:flex;gap:12px;width:100%;margin:4px 0;padding:12px;color:#e31b21;background:transparent;border-radius:6px;text-align:left}.nav.active,.nav:hover{color:#d81515;background:rgba(255,255,255,.1)}.nav b{width:20px;color:#80b9aa;text-align:center}.back{display:block;margin:35px 10px;color:#c3d0d2;text-decoration:none;font-size:12px}.main{flex:1;min-width:0}.top{height:78px;display:flex;justify-content:space-between;align-items:center;padding:0 42px;background:#fff;border-bottom:1px solid var(--line)}.crumb{color:var(--muted);font-size:13px}.profile{display:flex;align-items:center;gap:9px}.avatar{display:grid;place-items:center;width:34px;height:34px;color:#fff;background:#36766e;border-radius:50%;font-size:11px;font-weight:700}.profile small{display:block;color:var(--muted);font-size:11px}.content{max-width:1280px;margin:auto;padding:37px 42px}.heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:27px}.heading h1{margin:0;font:700 30px "Playfair Display",serif}.heading p{margin:7px 0 0;color:var(--muted)}.primary{padding:11px 16px;color:#e41717;background:var(--teal);border-radius:5px;font-weight:700}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}.stat{padding:19px 21px;background:#fff;border:1px solid var(--line);border-radius:7px}.stat small{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em}.stat strong{display:block;margin-top:10px;font:700 29px "Playfair Display",serif}.panel{background:#da1010;border:1px solid var(--line);border-radius:7px;overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;padding:20px 23px;border-bottom:1px solid var(--line)}.panel h2{margin:0;font:700 19px "Playfair Display",serif}.tools{display:flex;gap:10px}.search{width:225px;padding:9px 11px;border:1px solid var(--line);border-radius:4px;outline:none}.table-wrap{overflow:auto}table{width:100%;min-width:720px;border-collapse:collapse}th,td{padding:14px 22px;text-align:left;border-bottom:1px solid #edf0f0}th{color:var(--muted);background:#fafcfc;font-size:10px;letter-spacing:.1em;text-transform:uppercase}td{color:#47545c}.title{color:var(--ink);font-weight:700}.cover{width:38px;height:52px;object-fit:cover;vertical-align:middle;border-radius:3px}.book-cell{display:flex;align-items:center;gap:11px}.tag{display:inline-block;padding:4px 7px;color:#14745f;background:#e7f5f0;border-radius:3px;font-size:11px}.actions{display:flex;gap:6px}.action{padding:7px 9px;color:#55717a;background:#eef2f2;border-radius:4px;font-size:12px;font-weight:700}.action.delete{color:var(--red);background:#fff0f0}.empty{text-align:center;color:var(--muted);padding:45px}.modal-bg{position:fixed;inset:0;z-index:3;display:grid;place-items:center;padding:20px;background:rgba(24,39,45,.6)}.modal-bg[hidden]{display:none}.modal{width:min(590px,100%);max-height:92vh;overflow:auto;padding:27px;background:#fff;border-radius:7px}.modal-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:21px}.modal h2{margin:0;font:700 24px "Playfair Display",serif}.close{color:var(--muted);background:none;font-size:23px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:block;color:#52616a;font-size:13px;font-weight:600}.field.full{grid-column:1/-1}.field input,.field textarea,.field select{display:block;width:100%;margin-top:7px;padding:10px;border:1px solid var(--line);border-radius:4px;outline:none}.field textarea{min-height:95px;resize:vertical}.modal-actions{display:flex;justify-content:end;gap:8px;margin-top:23px}.cancel{padding:10px 14px;color:#5a6b71;background:#edf1f1;border-radius:4px;font-weight:700}.toast{position:fixed;right:24px;bottom:22px;padding:12px 16px;color:#fff;background:#233a42;border-radius:5px}.toast[hidden]{display:none}@media(max-width:760px){.side{width:68px;padding:20px 9px}.brand{padding:0 8px 35px}.brand span:last-child,.label,.nav span,.back,.profile div{display:none}.nav{justify-content:center;padding:13px 0}.top{padding:0 20px}.content{padding:27px 18px}.stats{grid-template-columns:1fr}.heading{align-items:start;flex-direction:column;gap:16px}.tools{width:100%}.search{width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
-</style></head><body><div class="app"><aside class="side"><div class="brand"><i class="mark">M</i><span>Truyện Mộc</span></div><div class="label">Quản lý</div><button class="nav active"><b>▦</b><span>Tổng quan</span></button><button class="nav"><b>▤</b><span>Kho truyện</span></button><button class="nav"><b>☷</b><span>Chương truyện</span></button><a class="back" href="/">← Về trang đọc</a></aside><main class="main"><header class="top"><div class="crumb">Quản trị / <strong>Kho truyện</strong></div><div class="profile"><i class="avatar">AD</i><div><strong>Administrator</strong><small>Quản trị viên</small></div></div></header><section class="content"><div class="heading"><div><h1>Kho truyện</h1><p>Quản lý nội dung, chương và trạng thái xuất bản.</p></div><button class="primary" id="addBook">+ Thêm truyện</button></div><div class="stats"><div class="stat"><small>TỔNG TRUYỆN</small><strong id="bookCount">--</strong></div><div class="stat"><small>TỔNG CHƯƠNG</small><strong id="chapterCount">--</strong></div><div class="stat"><small>LƯỢT ĐỌC</small><strong id="viewCount">--</strong></div></div><div class="panel"><div class="panel-head"><div><h2>Danh sách truyện</h2></div><div class="tools"><input class="search" id="search" placeholder="Tìm tên truyện..."></div></div><div class="table-wrap"><table><thead><tr><th>Truyện</th><th>Tác giả</th><th>Thể loại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookTable"><tr><td colspan="5" class="empty">Đang tải dữ liệu...</td></tr></tbody></table></div></div></section></main></div>
-<div class="modal-bg" id="bookModal" hidden><form class="modal" id="bookForm"><div class="modal-head"><h2 id="bookModalTitle">Thêm truyện mới</h2><button class="close" type="button" onclick="closeModal('bookModal')">×</button></div><div class="form-grid"><label class="field">Tên truyện<input id="title" required maxlength="180"></label><label class="field">Tác giả<input id="author" maxlength="120"></label><label class="field">Thể loại<select id="genre"><option>Ngôn tình</option><option>Fantasy</option><option>Trinh thám</option><option>Đời thường</option></select></label><label class="field">Trạng thái<select id="status"><option>Đang ra</option><option>Hoàn thành</option><option>Tạm dừng</option></select></label><label class="field full">URL ảnh bìa<input id="coverUrl" placeholder="https://..."></label><label class="field full">Mô tả<textarea id="description"></textarea></label></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeModal('bookModal')">Hủy</button><button class="primary">Lưu truyện</button></div></form></div>
-<div class="modal-bg" id="chapterModal" hidden><form class="modal" id="chapterForm"><div class="modal-head"><h2>Thêm chương truyện</h2><button class="close" type="button" onclick="closeModal('chapterModal')">×</button></div><label class="field">Số chương<input id="chapterNumber" type="number" min="1" required></label><label class="field">Tiêu đề<input id="chapterTitle" required></label><label class="field">Nội dung<textarea id="chapterContent" required style="min-height:240px"></textarea></label><div class="modal-actions"><button class="cancel" type="button" onclick="closeModal('chapterModal')">Hủy</button><button class="primary">Lưu chương</button></div></form></div><div class="toast" id="toast" hidden></div>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Truyện Mộc | Quản trị nội dung</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#17243a;--muted:#718096;--line:#e4ebf4;--paper:#f5f8fc;--blue:#3478f6;--navy:#172b4d;--red:#c43d52}
+        *{box-sizing:border-box}
+        body{margin:0;color:var(--ink);background:var(--paper);font:14px "DM Sans",sans-serif}
+        button,input,textarea,select{font:inherit}
+        button{cursor:pointer}
+        .app{display:flex;min-height:100vh}
+        .side{width:235px;padding:25px 16px;color:#e7efff;background:var(--navy)}
+        .brand{display:flex;align-items:center;gap:10px;padding:0 9px 38px;color:white;font:700 21px "Playfair Display",serif;text-decoration:none}
+        .mark{display:grid;place-items:center;width:35px;height:35px;color:white;background:#3478f6;border-radius:11px;font-style:normal}
+        .label{padding:0 12px 10px;color:#9aacc8;font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+        .nav{display:flex;gap:12px;width:100%;margin:4px 0;padding:12px;color:#d1dcf0;background:transparent;border:0;border-radius:8px;text-align:left}
+        .nav:hover,.nav.active{color:white;background:rgba(255,255,255,.12)}
+        .nav b{width:20px;color:#8db8ff;text-align:center}
+        .back{display:block;margin:34px 10px;color:#b7c6dd;text-decoration:none;font-size:12px}
+        .main{flex:1;min-width:0}
+        .top{height:72px;display:flex;justify-content:space-between;align-items:center;padding:0 38px;background:#fff;border-bottom:1px solid var(--line)}
+        .crumb{color:var(--muted);font-size:13px}
+        .profile{display:flex;align-items:center;gap:10px}
+        .avatar{display:grid;place-items:center;width:36px;height:36px;color:#fff;background:#3478f6;border-radius:50%;font-size:11px;font-weight:700}
+        .profile small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+        .content{max-width:1320px;margin:auto;padding:34px 38px}
+        .heading{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:24px}
+        .heading h1{margin:0;font:700 30px "Playfair Display",serif}
+        .heading p{margin:7px 0 0;color:var(--muted)}
+        .primary{padding:10px 15px;color:white;background:var(--blue);border:0;border-radius:8px;font-weight:700}
+        .primary:hover{background:#2863d8}
+        .secondary{padding:9px 12px;color:#315d99;background:#edf4ff;border:1px solid #dceaff;border-radius:8px;font-weight:700}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+        .stat{padding:18px 20px;background:#fff;border:1px solid var(--line);border-radius:12px}
+        .stat small{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em}
+        .stat strong{display:block;margin-top:9px;font:700 27px "Playfair Display",serif}
+        .panel{margin-bottom:20px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+        .panel-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:18px 21px;border-bottom:1px solid var(--line)}
+        .panel h2{margin:0;font:700 19px "Playfair Display",serif}
+        .panel-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+        .search{width:min(270px,55vw);padding:9px 11px;border:1px solid var(--line);border-radius:8px;outline:none}
+        .search:focus,.field input:focus,.field textarea:focus,.field select:focus{border-color:#8bb7ff;box-shadow:0 0 0 3px rgba(52,120,246,.1)}
+        .table-wrap{overflow:auto}
+        table{width:100%;min-width:730px;border-collapse:collapse}
+        th,td{padding:13px 18px;text-align:left;border-bottom:1px solid #edf1f6}
+        th{color:var(--muted);background:#fafcff;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+        td{color:#47566d}
+        .book-cell{display:flex;align-items:center;gap:11px;min-width:190px}
+        .cover{width:38px;height:52px;object-fit:cover;background:#eaf3ff;border-radius:5px}
+        .title{color:var(--ink);font-weight:700}
+        .tag{display:inline-block;padding:4px 8px;color:#2459aa;background:#edf4ff;border-radius:20px;font-size:11px}
+        .actions{display:flex;gap:6px;white-space:nowrap}
+        .action{padding:7px 9px;color:#315d99;background:#edf4ff;border:0;border-radius:6px;font-size:11px;font-weight:700}
+        .action.delete{color:var(--red);background:#fff0f2}
+        .empty{text-align:center;color:var(--muted);padding:36px}
+        .notice{margin:18px 0;padding:12px 14px;color:#754d00;background:#fff7df;border:1px solid #f5e3aa;border-radius:8px}
+        .notice[hidden]{display:none}
+        .modal-bg{position:fixed;inset:0;z-index:3;display:grid;place-items:center;padding:18px;background:rgba(18,37,66,.55)}
+        .modal-bg[hidden]{display:none}
+        .modal{width:min(640px,100%);max-height:92vh;overflow:auto;padding:24px;background:#fff;border-radius:14px;box-shadow:0 24px 70px rgba(12,36,73,.2)}
+        .modal-head{display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:20px}
+        .modal h2{margin:0;font:700 23px "Playfair Display",serif}
+        .close{color:var(--muted);background:none;border:0;font-size:24px}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .field{display:block;color:#40516a;font-size:12px;font-weight:700}
+        .field.full{grid-column:1/-1}
+        .field input,.field textarea,.field select{display:block;width:100%;margin-top:7px;padding:10px;border:1px solid var(--line);border-radius:8px;outline:none}
+        .field textarea{min-height:100px;resize:vertical}
+        .modal-actions{display:flex;justify-content:end;gap:8px;margin-top:20px}
+        .cancel{padding:9px 13px;color:#596b83;background:#edf1f6;border:0;border-radius:8px;font-weight:700}
+        .chapter-list{display:grid;gap:8px}
+        .chapter-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;background:#f6f9fd;border:1px solid var(--line);border-radius:8px}
+        .chapter-title{font-weight:700}
+        .toast{position:fixed;right:20px;bottom:20px;z-index:10;max-width:min(420px,calc(100vw - 40px));padding:12px 16px;color:white;background:#203b66;border-radius:9px;box-shadow:0 8px 24px #132b4c33}
+        .toast.error{background:#a5364c}
+        .toast[hidden]{display:none}
+        @media(max-width:850px){.side{width:68px;padding:20px 9px}.brand{padding:0 7px 34px}.brand span:last-child,.label,.nav span,.back,.profile div{display:none}.nav{justify-content:center;padding:13px 0}.top{padding:0 18px}.content{padding:25px 18px}.stats{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:600px){.heading{align-items:start;flex-direction:column}.panel-head{align-items:stretch;flex-direction:column}.search{width:100%}.stats{gap:9px}.stat{padding:14px}.stat strong{font-size:23px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.content{padding:20px 12px}}
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="side">
+        <a class="brand" href="/"><i class="mark">M</i><span>Truyện Mộc</span></a>
+        <div class="label">Quản lý nội dung</div>
+        <a class="nav active" href="#catalog"><b>▦</b><span>Kho truyện</span></a>
+        <a class="nav" href="#moderation"><b>☷</b><span>Bình luận</span></a>
+        <a class="back" href="/">← Về trang đọc</a>
+    </aside>
+    <main class="main">
+        <header class="top">
+            <div class="crumb">Quản trị / <strong>Kho nội dung</strong></div>
+            <div class="profile"><i class="avatar" id="avatar">AD</i><div><strong id="adminName">Quản trị viên</strong><small>Administrator</small></div><button class="secondary" id="logoutButton" type="button">Đăng xuất</button></div>
+        </header>
+        <section class="content">
+            <div class="heading"><div><h1>Trung tâm quản trị</h1><p>Quản lý truyện, chương và cộng đồng đọc truyện.</p></div><button class="primary" id="addBook" type="button">+ Thêm truyện</button></div>
+            <div class="notice" id="pageError" role="alert" hidden></div>
+            <div class="stats">
+                <div class="stat"><small>TỔNG TRUYỆN</small><strong id="bookCount">—</strong></div>
+                <div class="stat"><small>TỔNG CHƯƠNG</small><strong id="chapterCount">—</strong></div>
+                <div class="stat"><small>BÌNH LUẬN</small><strong id="commentCount">—</strong></div>
+                <div class="stat"><small>LƯỢT ĐỌC</small><strong id="viewCount">—</strong></div>
+            </div>
+            <section class="panel" id="catalog">
+                <div class="panel-head"><div><h2>Danh sách truyện</h2><p>Thêm, chỉnh sửa, xóa và quản lý chương.</p></div><input class="search" id="search" type="search" placeholder="Tìm theo tên hoặc tác giả..." aria-label="Tìm truyện"></div>
+                <div class="table-wrap"><table><thead><tr><th>Truyện</th><th>Tác giả</th><th>Thể loại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookTable"><tr><td colspan="5" class="empty">Đang tải dữ liệu...</td></tr></tbody></table></div>
+            </section>
+            <section class="panel" id="moderation">
+                <div class="panel-head"><div><h2>Kiểm duyệt bình luận</h2><p>Gỡ bình luận không phù hợp khỏi trang truyện.</p></div></div>
+                <div class="table-wrap"><table><thead><tr><th>Người đọc</th><th>Nội dung</th><th>Đánh giá</th><th>Ngày gửi</th><th></th></tr></thead><tbody id="commentTable"><tr><td colspan="5" class="empty">Đang tải...</td></tr></tbody></table></div>
+            </section>
+        </section>
+    </main>
+</div>
+
+<div class="modal-bg" id="bookModal" hidden>
+    <form class="modal" id="bookForm">
+        <div class="modal-head"><h2 id="bookModalTitle">Thêm truyện mới</h2><button class="close" type="button" data-close="bookModal" aria-label="Đóng">×</button></div>
+        <div class="form-grid">
+            <label class="field">Tên truyện<input id="title" required maxlength="180"></label>
+            <label class="field">Tác giả<input id="author" maxlength="120"></label>
+            <label class="field">Thể loại<input id="genre" required maxlength="80" list="genreOptions" placeholder="Ví dụ: Fantasy"><datalist id="genreOptions"></datalist></label>
+            <label class="field">Trạng thái<select id="status"><option>Đang ra</option><option>Hoàn thành</option><option>Tạm dừng</option></select></label>
+            <label class="field full">URL ảnh bìa<input id="coverUrl" type="url" maxlength="1000" placeholder="https://..."></label>
+            <label class="field full">Giới thiệu<textarea id="description" maxlength="2000"></textarea></label>
+        </div>
+        <div class="modal-actions"><button class="cancel" type="button" data-close="bookModal">Hủy</button><button class="primary" id="saveBookButton">Lưu truyện</button></div>
+    </form>
+</div>
+
+<div class="modal-bg" id="chapterModal" hidden>
+    <section class="modal">
+        <div class="modal-head"><h2 id="chapterModalTitle">Danh sách chương</h2><button class="close" type="button" data-close="chapterModal" aria-label="Đóng">×</button></div>
+        <div class="chapter-list" id="chapterList"></div>
+        <div class="modal-actions"><button class="cancel" type="button" data-close="chapterModal">Đóng</button><button class="primary" id="addChapterButton" type="button">+ Thêm chương</button></div>
+    </section>
+</div>
+
+<div class="modal-bg" id="chapterFormModal" hidden>
+    <form class="modal" id="chapterForm">
+        <div class="modal-head"><h2 id="chapterFormTitle">Thêm chương</h2><button class="close" type="button" data-close="chapterFormModal" aria-label="Đóng">×</button></div>
+        <label class="field">Số chương<input id="chapterNumber" type="number" min="1" max="1000000" required></label>
+        <label class="field">Tiêu đề<input id="chapterTitle" required maxlength="180"></label>
+        <label class="field">Nội dung<textarea id="chapterContent" required maxlength="1000000" style="min-height:240px"></textarea></label>
+        <div class="modal-actions"><button class="cancel" type="button" data-close="chapterFormModal">Hủy</button><button class="primary" id="saveChapterButton">Lưu chương</button></div>
+    </form>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
 <script>
-const session=JSON.parse(localStorage.getItem('storySession')||'null');if(!session||session.role!=='admin'){location.replace('/login.html');throw new Error('Admin authentication required');}
-const localBooks=()=>JSON.parse(localStorage.getItem('localBooks')||'[]');const saveLocalBooks=books=>localStorage.setItem('localBooks',JSON.stringify(books));const localChapters=()=>JSON.parse(localStorage.getItem('localChapters')||'[]');const saveLocalChapters=chapters=>localStorage.setItem('localChapters',JSON.stringify(chapters));const response=data=>({ok:true,json:async()=>data});const nativeFetch=window.fetch.bind(window);window.fetch=async(url,options={})=>{try{const result=await nativeFetch(url,options);if(result.ok)return result}catch(error){}const path=String(url);const method=options.method||'GET';let books=localBooks();let chapters=localChapters();if(path==='/api/books'&&method==='GET')return response(books);if(path==='/api/books'&&method==='POST'){const item=JSON.parse(options.body);if(item.id){books=books.map(book=>book.id===item.id?{...book,...item}:book)}else{item.id=Date.now();item.views=0;books.push(item)}saveLocalBooks(books);return response(item)}if(path.match(/^\/api\/books\/\d+$/)&&method==='DELETE'){const id=Number(path.split('/').pop());saveLocalBooks(books.filter(book=>book.id!==id));saveLocalChapters(chapters.filter(chapter=>chapter.bookId!==id));return response({})}if(path.match(/^\/api\/books\/\d+\/chapters$/))return response(chapters.filter(chapter=>chapter.bookId===Number(path.split('/')[3])));if(path==='/api/chapters'&&method==='POST'){const item=JSON.parse(options.body);item.id=Date.now();chapters.push(item);saveLocalChapters(chapters);return response(item)}return response([])};
-const API='/api/books';let books=[],editingId=null,chapterBookId=null;const $=id=>document.getElementById(id);const fallback='https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=200&q=80';
-async function load(){try{const r=await fetch(API);books=await r.json();$('bookCount').textContent=books.length;$('viewCount').textContent=books.reduce((sum,b)=>sum+(b.views||0),0);let total=0;for(const b of books){const c=await fetch(`${API}/${b.id}/chapters`);total+=(await c.json()).length}$('chapterCount').textContent=total;render()}catch(e){$('bookTable').innerHTML='<tr><td colspan="5" class="empty">Không thể tải dữ liệu.</td></tr>'}}function render(){const q=$('search').value.toLowerCase();const list=books.filter(b=>b.title.toLowerCase().includes(q));$('bookTable').innerHTML=list.length?list.map(b=>`<tr><td><div class="book-cell"><img class="cover" src="${b.coverUrl||fallback}"><span class="title">${safe(b.title)}</span></div></td><td>${safe(b.author||'—')}</td><td>${safe(b.genre||'—')}</td><td><span class="tag">${safe(b.status||'Đang ra')}</span></td><td><div class="actions"><button class="action" onclick="editBook(${b.id})">Sửa</button><button class="action" onclick="addChapter(${b.id})">+ Chương</button><button class="action delete" onclick="deleteBook(${b.id})">Xóa</button></div></td></tr>`).join(''):'<tr><td colspan="5" class="empty">Chưa có truyện.</td></tr>'}function safe(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}function closeModal(id){$(id).hidden=true}function openBook(book){editingId=book?.id||null;$('bookModalTitle').textContent=book?'Sửa truyện':'Thêm truyện';$('title').value=book?.title||'';$('author').value=book?.author||'';$('genre').value=book?.genre||'Ngôn tình';$('status').value=book?.status||'Đang ra';$('coverUrl').value=book?.coverUrl||'';$('description').value=book?.description||'';$('bookModal').hidden=false}$('addBook').onclick=()=>openBook();async function editBook(id){openBook(books.find(b=>b.id===id))}async function deleteBook(id){if(!confirm('Xóa truyện và toàn bộ chương?'))return;const r=await fetch(`${API}/${id}`,{method:'DELETE'});if(r.ok){toast('Đã xóa truyện');load()}}$('bookForm').onsubmit=async e=>{e.preventDefault();const data={title:$('title').value.trim(),author:$('author').value.trim(),genre:$('genre').value,status:$('status').value,coverUrl:$('coverUrl').value.trim(),description:$('description').value.trim()};if(editingId)data.id=editingId;const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(r.ok){closeModal('bookModal');toast(editingId?'Đã cập nhật truyện':'Đã thêm truyện');load()}};function addChapter(id){chapterBookId=id;$('chapterNumber').value='';$('chapterTitle').value='';$('chapterContent').value='';$('chapterModal').hidden=false}$('chapterForm').onsubmit=async e=>{e.preventDefault();const data={bookId:chapterBookId,chapterNumber:Number($('chapterNumber').value),title:$('chapterTitle').value.trim(),content:$('chapterContent').value.trim()};const r=await fetch('/api/chapters',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(r.ok){closeModal('chapterModal');toast('Đã thêm chương');load()}};function toast(message){$('toast').textContent=message;$('toast').hidden=false;setTimeout(()=>$('toast').hidden=true,2400)}$('search').oninput=render;load();
-</script></body></html>
+    'use strict';
+    const API = '/api/books';
+    const $ = id => document.getElementById(id);
+    const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[char]));
+    const cover = value => {
+        if (!value) return '/book-placeholder.svg';
+        try {
+            const url = new URL(value, location.origin);
+            return ['http:', 'https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg';
+        } catch (error) {
+            return '/book-placeholder.svg';
+        }
+    };
+    let books = [];
+    let comments = [];
+    let editingBookId = null;
+    let editingChapterId = null;
+    let selectedBookId = null;
+
+    async function api(url, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = new Headers(options.headers || {});
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+            await fetch('/api/auth/csrf', { credentials: 'same-origin' });
+            const cookie = document.cookie.split('; ').find(item => item.startsWith('XSRF-TOKEN='));
+            if (!cookie) throw new Error('Không lấy được mã bảo mật. Hãy tải lại trang và thử lại.');
+            headers.set('X-XSRF-TOKEN', decodeURIComponent(cookie.substring('XSRF-TOKEN='.length)));
+        }
+        if (options.body) headers.set('Content-Type', 'application/json');
+        const response = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+        if (response.status === 401 || response.status === 403) {
+            location.assign('/login.html');
+            throw new Error('Phiên quản trị không còn hợp lệ. Vui lòng đăng nhập lại.');
+        }
+        return response;
+    }
+
+    async function json(response) {
+        if (response.ok) return response.status === 204 ? null : response.json();
+        let message = `Yêu cầu thất bại (${response.status}).`;
+        try {
+            const body = await response.json();
+            message = body.message || body.detail || body.error || message;
+        } catch (error) {
+            // Keep the HTTP status as an actionable fallback when the server has no JSON body.
+        }
+        throw new Error(message);
+    }
+
+    function toast(message, error = false) {
+        $('toast').textContent = message;
+        $('toast').classList.toggle('error', error);
+        $('toast').hidden = false;
+        window.clearTimeout(toast.timer);
+        toast.timer = window.setTimeout(() => { $('toast').hidden = true; }, 3200);
+    }
+
+    function showPageError(message) {
+        $('pageError').textContent = message;
+        $('pageError').hidden = !message;
+    }
+
+    function closeModal(id) { $(id).hidden = true; }
+
+    function openBook(book = null) {
+        editingBookId = book?.id ?? null;
+        $('bookModalTitle').textContent = book ? 'Chỉnh sửa truyện' : 'Thêm truyện mới';
+        $('title').value = book?.title ?? '';
+        $('author').value = book?.author ?? '';
+        $('genre').value = book?.genre ?? '';
+        $('status').value = book?.status ?? 'Đang ra';
+        $('coverUrl').value = book?.coverUrl ?? '';
+        $('description').value = book?.description ?? '';
+        $('bookModal').hidden = false;
+        $('title').focus();
+    }
+
+    function renderBooks() {
+        const query = $('search').value.trim().toLocaleLowerCase('vi');
+        const matches = books.filter(book => `${book.title || ''} ${book.author || ''}`.toLocaleLowerCase('vi').includes(query));
+        $('bookTable').innerHTML = matches.length ? matches.map(book => `
+            <tr>
+                <td><div class="book-cell"><img class="cover" src="${safe(cover(book.coverUrl))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"><span class="title">${safe(book.title)}</span></div></td>
+                <td>${safe(book.author || '—')}</td><td>${safe(book.genre || '—')}</td>
+                <td><span class="tag">${safe(book.status || 'Chưa cập nhật')}</span></td>
+                <td><div class="actions">
+                    <button class="action" type="button" data-action="edit" data-id="${Number(book.id)}">Sửa</button>
+                    <button class="action" type="button" data-action="chapters" data-id="${Number(book.id)}">Chương</button>
+                    <button class="action delete" type="button" data-action="delete" data-id="${Number(book.id)}">Xóa</button>
+                </div></td>
+            </tr>`).join('') : '<tr><td colspan="5" class="empty">Không tìm thấy truyện phù hợp.</td></tr>';
+        $('genreOptions').innerHTML = [...new Set(books.map(book => book.genre).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b, 'vi'))
+            .map(genre => `<option value="${safe(genre)}"></option>`).join('');
+    }
+
+    function renderComments() {
+        $('commentTable').innerHTML = comments.length ? comments.map(comment => `
+            <tr><td>${safe(comment.username)}</td><td>${safe(comment.content)}</td>
+            <td>${'★'.repeat(Math.max(0, Math.min(5, Number(comment.rating) || 0)))}</td>
+            <td>${comment.createdAt ? safe(new Date(comment.createdAt).toLocaleString('vi')) : '—'}</td>
+            <td><button class="action delete" type="button" data-delete-comment="${Number(comment.id)}">Gỡ</button></td></tr>
+        `).join('') : '<tr><td colspan="5" class="empty">Chưa có bình luận nào.</td></tr>';
+    }
+
+    async function load() {
+        showPageError('');
+        try {
+            const [bookResponse, summaryResponse, commentResponse] = await Promise.all([
+                api(API), api('/api/admin/summary'), api('/api/admin/comments')
+            ]);
+            books = await json(bookResponse);
+            const summary = await json(summaryResponse);
+            comments = await json(commentResponse);
+            $('bookCount').textContent = Number(summary.books || 0).toLocaleString('vi');
+            $('chapterCount').textContent = Number(summary.chapters || 0).toLocaleString('vi');
+            $('commentCount').textContent = Number(summary.comments || 0).toLocaleString('vi');
+            $('viewCount').textContent = Number(summary.views || 0).toLocaleString('vi');
+            renderBooks();
+            renderComments();
+        } catch (error) {
+            showPageError(error.message || 'Không thể tải dữ liệu quản trị.');
+            console.error('Lỗi tải trang quản trị:', error);
+        }
+    }
+
+    async function loadChapters(bookId) {
+        const response = await api(`${API}/${bookId}/chapters`);
+        const chapters = await json(response);
+        $('chapterList').innerHTML = chapters.length ? chapters.map(chapter => `
+            <div class="chapter-row"><span><span class="chapter-title">Chương ${Number(chapter.chapterNumber)}:</span> ${safe(chapter.title)}</span>
+            <span class="actions"><button class="action" type="button" data-edit-chapter="${Number(chapter.id)}">Sửa</button>
+            <button class="action delete" type="button" data-delete-chapter="${Number(chapter.id)}">Xóa</button></span></div>
+        `).join('') : '<div class="empty">Truyện này chưa có chương.</div>';
+        return chapters;
+    }
+
+    function openChapterForm(chapter = null) {
+        editingChapterId = chapter?.id ?? null;
+        $('chapterFormTitle').textContent = chapter ? 'Chỉnh sửa chương' : 'Thêm chương';
+        $('chapterNumber').value = chapter?.chapterNumber ?? '';
+        $('chapterTitle').value = chapter?.title ?? '';
+        $('chapterContent').value = chapter?.content ?? '';
+        $('chapterFormModal').hidden = false;
+        $('chapterNumber').focus();
+    }
+
+    $('addBook').addEventListener('click', () => openBook());
+    $('search').addEventListener('input', renderBooks);
+    $('logoutButton').addEventListener('click', async () => {
+        try {
+            const response = await api('/api/auth/logout', { method: 'POST' });
+            if (!response.ok) throw new Error('Đăng xuất không thành công.');
+            location.assign('/');
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+    document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.close)));
+    document.querySelectorAll('.modal-bg').forEach(background => background.addEventListener('click', event => {
+        if (event.target === background) background.hidden = true;
+    }));
+    $('bookTable').addEventListener('click', async event => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const id = Number(button.dataset.id);
+        const book = books.find(item => item.id === id);
+        try {
+            if (button.dataset.action === 'edit' && book) openBook(book);
+            if (button.dataset.action === 'chapters' && book) {
+                selectedBookId = id;
+                $('chapterModalTitle').textContent = `Chương truyện · ${book.title}`;
+                await loadChapters(id);
+                $('chapterModal').hidden = false;
+            }
+            if (button.dataset.action === 'delete' && book && confirm(`Xóa "${book.title}" cùng toàn bộ chương và bình luận?`)) {
+                const response = await api(`${API}/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Không thể xóa truyện.');
+                toast('Đã xóa truyện và nội dung liên quan.');
+                await load();
+            }
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+    $('bookForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!event.currentTarget.reportValidity()) return;
+        const book = {
+            title: $('title').value.trim(), author: $('author').value.trim(),
+            genre: $('genre').value.trim(), status: $('status').value,
+            coverUrl: $('coverUrl').value.trim(), description: $('description').value.trim()
+        };
+        try {
+            const response = await api(editingBookId ? `${API}/${editingBookId}` : API, {
+                method: editingBookId ? 'PUT' : 'POST', body: JSON.stringify(book)
+            });
+            await json(response);
+            closeModal('bookModal');
+            toast(editingBookId ? 'Đã cập nhật truyện.' : 'Đã thêm truyện.');
+            await load();
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+    $('addChapterButton').addEventListener('click', () => openChapterForm());
+    $('chapterList').addEventListener('click', async event => {
+        const editButton = event.target.closest('[data-edit-chapter]');
+        const deleteButton = event.target.closest('[data-delete-chapter]');
+        try {
+            if (editButton) {
+                const chapters = await loadChapters(selectedBookId);
+                const chapter = chapters.find(item => item.id === Number(editButton.dataset.editChapter));
+                if (chapter) openChapterForm(chapter);
+            }
+            if (deleteButton && confirm('Xóa chương này?')) {
+                const response = await api(`/api/chapters/${Number(deleteButton.dataset.deleteChapter)}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Không thể xóa chương.');
+                await loadChapters(selectedBookId);
+                toast('Đã xóa chương.');
+                await load();
+            }
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+    $('chapterForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!event.currentTarget.reportValidity()) return;
+        const chapter = {
+            bookId: selectedBookId, chapterNumber: Number($('chapterNumber').value),
+            title: $('chapterTitle').value.trim(), content: $('chapterContent').value.trim()
+        };
+        try {
+            const response = await api(editingChapterId ? `/api/chapters/${editingChapterId}` : '/api/chapters', {
+                method: editingChapterId ? 'PUT' : 'POST', body: JSON.stringify(chapter)
+            });
+            await json(response);
+            closeModal('chapterFormModal');
+            await loadChapters(selectedBookId);
+            await load();
+            toast(editingChapterId ? 'Đã cập nhật chương.' : 'Đã thêm chương.');
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+    $('commentTable').addEventListener('click', async event => {
+        const button = event.target.closest('[data-delete-comment]');
+        if (!button || !confirm('Gỡ bình luận này?')) return;
+        try {
+            const response = await api(`/api/admin/comments/${Number(button.dataset.deleteComment)}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Không thể gỡ bình luận.');
+            toast('Đã gỡ bình luận.');
+            await load();
+        } catch (error) {
+            toast(error.message, true);
+        }
+    });
+
+    async function initialize() {
+        try {
+            const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
+            const user = await response.json();
+            if (!user.authenticated || user.role !== 'ADMIN') {
+                location.replace(user.authenticated ? '/' : '/login.html');
+                return;
+            }
+            $('adminName').textContent = user.username;
+            $('avatar').textContent = user.username.slice(0, 2).toUpperCase();
+            await load();
+        } catch (error) {
+            showPageError('Không thể xác minh phiên đăng nhập. Hãy đăng nhập lại.');
+            console.error('Lỗi xác minh quản trị viên:', error);
+        }
+    }
+    initialize();
+</script>
+</body>
+</html>

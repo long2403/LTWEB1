@@ -7,5 +7,6 @@ import java.util.List;
 public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
     List<Chapter> findByBookIdOrderByChapterNumberAsc(Integer bookId);
     long countByBookId(Integer bookId);
+    boolean existsByBookIdAndChapterNumber(Integer bookId, Integer chapterNumber);
     void deleteByBookId(Integer bookId);
 }
