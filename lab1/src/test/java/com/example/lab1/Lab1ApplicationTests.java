@@ -405,4 +405,90 @@ class Lab1ApplicationTests {
 	            .content("{\"message\":\"\",\"imageData\":\"data:image/png;base64," + oversizedImage + "\"}"))
 	        .andExpect(status().isPayloadTooLarge());
 	}
+
+	@Test
+	void readerCollectionsReportsRatingsAndAchievementsWorkWithCorrectOwnership() throws Exception {
+	    Book book = new Book();
+	    book.setTitle("Reader feature story " + System.nanoTime());
+	    book.setStoryType("NOVEL");
+	    book = books.save(book);
+	    Chapter chapter = new Chapter();
+	    chapter.setBookId(book.getId());
+	    chapter.setChapterNumber(1);
+	    chapter.setTitle("First chapter");
+	    chapter.setContent("A chapter for feature tests.");
+	    chapters.save(chapter);
+
+	    String collectionBody = "{\"name\":\"Muốn đọc\",\"bookId\":" + book.getId() + "}";
+	    MvcResult collectionResult = mockMvc.perform(post("/api/me/collections")
+	            .with(user("feature_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content(collectionBody))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$", hasSize(1)))
+	        .andExpect(jsonPath("$[0].collectionName").value("Muốn đọc"))
+	        .andReturn();
+	    Integer collectionId = com.jayway.jsonpath.JsonPath.read(
+	        collectionResult.getResponse().getContentAsString(), "$[0].id"
+	    );
+
+	    mockMvc.perform(post("/api/me/collections")
+	            .with(user("feature_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"name\":\"muốn đọc\",\"bookId\":" + book.getId() + "}"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$", hasSize(1)));
+
+	    mockMvc.perform(delete("/api/me/collections/" + collectionId)
+	            .with(user("another_reader").roles("USER"))
+	            .with(csrf()))
+	        .andExpect(status().isNotFound());
+
+	    mockMvc.perform(post("/api/me/history")
+	            .with(user("feature_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"bookId\":" + book.getId() + ",\"chapterNumber\":1}"))
+	        .andExpect(status().isOk());
+	    mockMvc.perform(get("/api/me/achievements").with(user("feature_reader").roles("USER")))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$", hasSize(4)))
+	        .andExpect(jsonPath("$[0].unlocked").value(true));
+
+	    mockMvc.perform(post("/api/books/" + book.getId() + "/comments")
+	            .with(user("feature_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"content\":\"Great story\",\"rating\":4}"))
+	        .andExpect(status().isOk());
+	    mockMvc.perform(get("/api/books/" + book.getId() + "/rating"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.average").value(4.0))
+	        .andExpect(jsonPath("$.count").value(1));
+
+	    mockMvc.perform(post("/api/reports")
+	            .with(user("feature_reader").roles("USER"))
+	            .with(csrf())
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"bookId\":" + book.getId() + ",\"chapterNumber\":1,\"reason\":\"CONTENT_ERROR\",\"details\":\"Typo\"}"))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.status").value("OPEN"));
+
+	    mockMvc.perform(get("/api/admin/reports").with(user("feature_reader").roles("USER")))
+	        .andExpect(status().isForbidden());
+	    MvcResult reports = mockMvc.perform(get("/api/admin/reports").with(user("feature_admin").roles("ADMIN")))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$[0].reason").value("CONTENT_ERROR"))
+	        .andReturn();
+	    Integer reportId = com.jayway.jsonpath.JsonPath.read(
+	        reports.getResponse().getContentAsString(), "$[0].id"
+	    );
+	    mockMvc.perform(post("/api/admin/reports/" + reportId + "/resolve")
+	            .with(user("feature_admin").roles("ADMIN"))
+	            .with(csrf()))
+	        .andExpect(status().isOk())
+	        .andExpect(jsonPath("$.status").value("RESOLVED"));
+	}
 }

@@ -33,6 +33,7 @@
         .reader-head select{padding:8px;border-radius:6px}.reader-body{overflow:auto;text-align:center;padding:15px}
         .reader-body img{display:block;max-width:min(100%,900px);margin:0 auto 8px}.novel{max-width:760px;margin:0 auto;text-align:left;white-space:pre-wrap;font-size:18px;line-height:2;background:#fff;color:#28364b;padding:30px;border-radius:10px}
         .reader-foot button,.reader-head button{padding:9px 13px;color:white;background:#3478f6;border-radius:7px}
+        .reader-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.reader-tools select{max-width:125px}
         @media(max-width:720px){.hero{grid-template-columns:110px 1fr;gap:15px;padding:16px}.cover{height:165px}.hero h1{font-size:25px}.columns{grid-template-columns:1fr}main{padding:0 12px}.panel{padding:15px}.nav{gap:10px;font-size:12px}}
     </style>
 </head>
@@ -43,8 +44,8 @@
     <div id="pageError" class="notice" role="alert" hidden></div>
     <section class="hero" id="storyCard" hidden>
         <img class="cover" id="cover" src="/book-placeholder.svg" alt="Bìa truyện">
-        <div><span class="badge" id="typeBadge"></span><h1 id="title"></h1><div class="meta"><span id="author"></span><span id="genre"></span><span id="status"></span><span id="views"></span></div>
-        <p class="description" id="description"></p><div class="actions"><button class="primary" id="followButton">♡ Theo dõi</button><button class="secondary" id="startButton">Đọc chương đầu</button></div></div>
+        <div><span class="badge" id="typeBadge"></span><h1 id="title"></h1><div class="meta"><span id="author"></span><span id="genre"></span><span id="status"></span><span id="views"></span><span id="ratingSummary">Đang tải đánh giá…</span></div>
+        <p class="description" id="description"></p><div class="actions"><button class="primary" id="followButton">♡ Theo dõi</button><button class="secondary" id="startButton">Đọc chương đầu</button><button class="secondary" id="shareButton">Chia sẻ truyện</button><button class="secondary" id="collectionButton">＋ Danh sách riêng</button><button class="secondary" id="reportButton">Báo cáo nội dung</button></div></div>
     </section>
     <div class="columns" id="contentColumns" hidden>
         <section class="panel"><h2>Danh sách chương <span class="badge" id="chapterCount"></span></h2><div id="chapterList"></div></section>
@@ -54,13 +55,13 @@
         </section>
     </div>
 </main>
-<section class="reader" id="reader"><div class="reader-head"><div><strong id="readerTitle"></strong><span id="readerChapter" style="margin-left:12px;color:#c7d5e8"></span></div><div><select id="readerSelect" aria-label="Chọn chương"></select><button id="closeReader">Đóng</button></div></div><div class="reader-body" id="readerBody"></div><div class="reader-foot"><button id="prevChapter">← Chương trước</button><button id="nextChapter">Chương sau →</button></div></section>
+<section class="reader" id="reader"><div class="reader-head"><div><strong id="readerTitle"></strong><span id="readerChapter" style="margin-left:12px;color:#c7d5e8"></span></div><div class="reader-tools"><select id="readerSelect" aria-label="Chọn chương"></select><select id="fontSize" aria-label="Cỡ chữ"><option value="16">Chữ nhỏ</option><option value="18">Chữ vừa</option><option value="22">Chữ lớn</option><option value="26">Chữ rất lớn</option></select><select id="readerTheme" aria-label="Giao diện đọc"><option value="paper">Nền sáng</option><option value="cream">Nền kem</option><option value="night">Nền tối</option></select><select id="readerWidth" aria-label="Độ rộng nội dung"><option value="680">Hẹp</option><option value="760">Vừa</option><option value="940">Rộng</option></select><button id="readerReport">Báo lỗi chương</button><button id="closeReader">Đóng</button></div></div><div class="reader-body" id="readerBody"></div><div class="reader-foot"><button id="prevChapter">← Chương trước</button><button id="nextChapter">Chương sau →</button></div></section>
 <script src="/story-covers.js"></script>
 <script>
     const $ = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
     const bookId = Number(params.get('id'));
-    let book = null, chapters = [], comments = [], session = null, replyTo = null, editingComment = null, chapterIndex = 0, followed = false;
+    let book = null, chapters = [], comments = [], session = null, replyTo = null, editingComment = null, chapterIndex = 0, followed = false, saveScrollTimer = null;
     const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const imageUrl = value => { try { const url = new URL(value || '/book-placeholder.svg', location.origin); return ['http:','https:'].includes(url.protocol) ? url.href : '/book-placeholder.svg'; } catch { return '/book-placeholder.svg'; } };
     function reportError(message) { $('pageError').textContent = message; $('pageError').hidden = !message; }
@@ -105,6 +106,8 @@
             $('description').textContent=book.description||'Chưa có giới thiệu cho bộ truyện này.';
             $('chapterCount').textContent=chapters.length;
             $('storyCard').hidden=false; $('contentColumns').hidden=false;
+            const rating = await fetch(`/api/books/${bookId}/rating`).then(json);
+            $('ratingSummary').textContent=rating.count ? `★ ${Number(rating.average).toFixed(1)} · ${Number(rating.count)} đánh giá` : 'Chưa có đánh giá';
             renderChapters(); await loadComments(); await loadFollowState();
             const view = await request(`/api/books/${bookId}/view`,{method:'POST'});
             const viewResult = await json(view); $('views').textContent=`${Number(viewResult.views).toLocaleString('vi')} lượt xem`;
@@ -183,6 +186,9 @@
             $('readerBody').innerHTML=images.length?images.map((src,i)=>`<img src="${safe(imageUrl(src))}" alt="Trang ${i+1}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'">`).join(''):`<p class="novel">${safe(chapter.content||'Chương này chưa có nội dung.')}</p>`;
         }
         $('reader').classList.add('open'); $('readerBody').scrollTop=0;
+        applyReaderSettings();
+        const savedScroll=Number(localStorage.getItem(`reader-position:${bookId}:${chapter.chapterNumber}`)||0);
+        if(savedScroll>0)requestAnimationFrame(()=>$('readerBody').scrollTop=savedScroll);
         if(session) {
             try { await json(await request('/api/me/history',{method:'POST',body:JSON.stringify({bookId,chapterNumber:chapter.chapterNumber})})); }
             catch(error){console.error('Không thể lưu lịch sử đọc:',error);}
@@ -225,6 +231,68 @@
     $('prevChapter').addEventListener('click',()=>openChapter(chapterIndex-1));
     $('nextChapter').addEventListener('click',()=>openChapter(chapterIndex+1));
     $('closeReader').addEventListener('click',()=>$('reader').classList.remove('open'));
+    function getReaderSettings() {
+        try { return JSON.parse(localStorage.getItem('reader-settings')||'{}'); }
+        catch { return {}; }
+    }
+    function applyReaderSettings() {
+        const settings=getReaderSettings();
+        $('fontSize').value=String(settings.fontSize||18);
+        $('readerTheme').value=settings.theme||'paper';
+        $('readerWidth').value=String(settings.width||760);
+        const novel=document.querySelector('.novel');
+        if(!novel)return;
+        novel.style.maxWidth=`${Number($('readerWidth').value)}px`;
+        novel.style.fontSize=`${Number($('fontSize').value)}px`;
+        const theme=$('readerTheme').value;
+        novel.style.background=theme==='night'?'#1e293b':theme==='cream'?'#f4ecd8':'#fff';
+        novel.style.color=theme==='night'?'#e5e7eb':'#28364b';
+    }
+    ['fontSize','readerTheme','readerWidth'].forEach(id=>$(id).addEventListener('change',()=>{
+        localStorage.setItem('reader-settings',JSON.stringify({
+            fontSize:Number($('fontSize').value),theme:$('readerTheme').value,width:Number($('readerWidth').value)
+        }));
+        applyReaderSettings();
+    }));
+    $('readerBody').addEventListener('scroll',()=>{
+        const chapter=chapters[chapterIndex];
+        if(!chapter)return;
+        clearTimeout(saveScrollTimer);
+        saveScrollTimer=setTimeout(()=>localStorage.setItem(
+            `reader-position:${bookId}:${chapter.chapterNumber}`,String($('readerBody').scrollTop)
+        ),250);
+    });
+    $('shareButton').addEventListener('click',async()=>{
+        try {
+            if(navigator.share) await navigator.share({title:book.title,text:`Đọc ${book.title} trên Truyện Mộc`,url:location.href});
+            else if(navigator.clipboard?.writeText) { await navigator.clipboard.writeText(location.href); reportError('Đã sao chép liên kết truyện.'); }
+            else { prompt('Sao chép liên kết truyện:',location.href); }
+        } catch(error) { if(error.name!=='AbortError')reportError('Không thể chia sẻ liên kết.'); }
+    });
+    async function submitReport(chapterNumber=null) {
+        if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
+        const reason=prompt('Chọn lý do: 1. Lỗi nội dung  2. Bản quyền  3. Không phù hợp  4. Khác','1');
+        if(reason===null)return;
+        const reasonCode=({'1':'CONTENT_ERROR','2':'COPYRIGHT','3':'INAPPROPRIATE','4':'OTHER'})[reason.trim()];
+        if(!reasonCode){reportError('Lý do không hợp lệ. Hãy nhập số từ 1 đến 4.');return;}
+        const details=prompt('Mô tả thêm (không bắt buộc):','');
+        if(details===null)return;
+        try {
+            await json(await request('/api/reports',{method:'POST',body:JSON.stringify({bookId,chapterNumber,reason:reasonCode,details})}));
+            reportError('Đã gửi báo cáo cho quản trị viên. Cảm ơn bạn.');
+        } catch(error) { reportError(error.message); }
+    }
+    $('reportButton').addEventListener('click',()=>submitReport());
+    $('readerReport').addEventListener('click',()=>submitReport(chapters[chapterIndex]?.chapterNumber));
+    $('collectionButton').addEventListener('click',async()=>{
+        if(!session){location.assign(`/login.html?return=${encodeURIComponent(`/book.html?id=${bookId}`)}`);return;}
+        const name=prompt('Tên danh sách riêng (ví dụ: Muốn đọc, Đọc sau):');
+        if(!name)return;
+        try {
+            await json(await request('/api/me/collections',{method:'POST',body:JSON.stringify({name,bookId})}));
+            reportError(`Đã thêm truyện vào danh sách “${name.trim()}”.`);
+        } catch(error) { reportError(error.message); }
+    });
     initialize();
 </script>
 </body>

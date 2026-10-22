@@ -10,6 +10,8 @@ import com.example.lab1.repository.ReaderAccountRepository;
 import com.example.lab1.repository.ReaderNotificationRepository;
 import com.example.lab1.repository.ReaderFavoriteRepository;
 import com.example.lab1.repository.ReadingHistoryRepository;
+import com.example.lab1.repository.ReaderCollectionRepository;
+import com.example.lab1.repository.ContentReportRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +44,8 @@ public class BookController {
     private final ReaderNotificationRepository notifications;
     private final ReaderFavoriteRepository favorites;
     private final ReadingHistoryRepository history;
+    private final ReaderCollectionRepository collections;
+    private final ContentReportRepository reports;
 
     public BookController(
         BookRepository books,
@@ -50,7 +54,9 @@ public class BookController {
         ReaderAccountRepository accounts,
         ReaderNotificationRepository notifications,
         ReaderFavoriteRepository favorites,
-        ReadingHistoryRepository history
+        ReadingHistoryRepository history,
+        ReaderCollectionRepository collections,
+        ContentReportRepository reports
     ) {
         this.books = books;
         this.chapters = chapters;
@@ -59,6 +65,8 @@ public class BookController {
         this.notifications = notifications;
         this.favorites = favorites;
         this.history = history;
+        this.collections = collections;
+        this.reports = reports;
     }
 
     @GetMapping
@@ -140,6 +148,15 @@ public class BookController {
         );
     }
 
+    @GetMapping("/{id}/rating")
+    public RatingSummary rating(@PathVariable Integer id) {
+        if (!books.existsById(id)) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Truyện không tồn tại.");
+        }
+        Object[] values = comments.ratingSummary(id).get(0);
+        return new RatingSummary(((Number) values[0]).doubleValue(), ((Number) values[1]).longValue());
+    }
+
     @PostMapping
     @Transactional
     public Book save(@Valid @RequestBody Book book) {
@@ -189,11 +206,16 @@ public class BookController {
         favorites.deleteByBookId(id);
         history.deleteByBookId(id);
         notifications.deleteByBookId(id);
+        collections.deleteByBookId(id);
+        reports.deleteByBookId(id);
         books.deleteById(id);
     }
 
     @GetMapping("/{id}/chapters")
     public List<Chapter> bookChapters(@PathVariable Integer id) { return chapters.findByBookIdOrderByChapterNumberAsc(id); }
+
+    public record RatingSummary(double average, long count) {
+    }
 
     private void validateStoryType(String storyType) {
         if (storyType == null

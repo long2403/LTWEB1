@@ -1,9 +1,11 @@
 package com.example.lab1.controller;
 
 import com.example.lab1.entity.Comment;
+import com.example.lab1.entity.ContentReport;
 import com.example.lab1.repository.BookRepository;
 import com.example.lab1.repository.ChapterRepository;
 import com.example.lab1.repository.CommentRepository;
+import com.example.lab1.repository.ContentReportRepository;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -20,11 +22,18 @@ public class AdminController {
     private final BookRepository books;
     private final ChapterRepository chapters;
     private final CommentRepository comments;
+    private final ContentReportRepository reports;
 
-    public AdminController(BookRepository books, ChapterRepository chapters, CommentRepository comments) {
+    public AdminController(
+        BookRepository books,
+        ChapterRepository chapters,
+        CommentRepository comments,
+        ContentReportRepository reports
+    ) {
         this.books = books;
         this.chapters = chapters;
         this.comments = comments;
+        this.reports = reports;
     }
 
     @GetMapping("/summary")
@@ -52,5 +61,19 @@ public class AdminController {
             comment.setContent("");
             comments.save(comment);
         }
+    }
+
+    @GetMapping("/reports")
+    public List<ContentReport> reports() {
+        return reports.findAllByOrderByStatusAscCreatedAtDesc();
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/reports/{id}/resolve")
+    public ContentReport resolveReport(@PathVariable Integer id) {
+        ContentReport report = reports.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Báo cáo không tồn tại.")
+        );
+        report.resolve();
+        return reports.save(report);
     }
 }

@@ -90,6 +90,7 @@
         <div class="label">Quản lý nội dung</div>
         <a class="nav active" href="#catalog"><b>▦</b><span>Kho truyện</span></a>
         <a class="nav" href="#moderation"><b>☷</b><span>Bình luận</span></a>
+        <a class="nav" href="#reports"><b>⚑</b><span>Báo cáo</span></a>
         <a class="back" href="/index.html">← Về trang đọc</a>
     </aside>
     <main class="main">
@@ -113,6 +114,10 @@
             <section class="panel" id="moderation">
                 <div class="panel-head"><div><h2>Kiểm duyệt bình luận</h2><p>Gỡ bình luận không phù hợp khỏi trang truyện.</p></div></div>
                 <div class="table-wrap"><table><thead><tr><th>Người đọc</th><th>Nội dung</th><th>Đánh giá</th><th>Ngày gửi</th><th></th></tr></thead><tbody id="commentTable"><tr><td colspan="5" class="empty">Đang tải...</td></tr></tbody></table></div>
+            </section>
+            <section class="panel" id="reports">
+                <div class="panel-head"><div><h2>Báo cáo nội dung</h2><p>Xem và đánh dấu các báo cáo của độc giả đã xử lý.</p></div></div>
+                <div class="table-wrap"><table><thead><tr><th>Người gửi</th><th>Truyện / chương</th><th>Lý do</th><th>Mô tả</th><th>Trạng thái</th><th>Ngày</th><th></th></tr></thead><tbody id="reportTable"><tr><td colspan="7" class="empty">Đang tải...</td></tr></tbody></table></div>
             </section>
         </section>
     </main>
@@ -165,6 +170,7 @@
     const cover = (value, title) => window.storyCoverUrl(value, title);
     let books = [];
     let comments = [];
+    let reports = [];
     let editingBookId = null;
     let editingChapterId = null;
     let selectedBookId = null;
@@ -259,21 +265,34 @@
         `).join('') : '<tr><td colspan="5" class="empty">Chưa có bình luận nào.</td></tr>';
     }
 
+    function renderReports() {
+        const reasons={CONTENT_ERROR:'Lỗi nội dung',COPYRIGHT:'Bản quyền',INAPPROPRIATE:'Không phù hợp',OTHER:'Khác'};
+        $('reportTable').innerHTML=reports.length?reports.map(report=>{
+            const book=books.find(item=>Number(item.id)===Number(report.bookId));
+            return `<tr><td>${safe(report.username)}</td><td>${safe(book?.title||`Truyện #${report.bookId}`)}${report.chapterNumber?` · Chương ${Number(report.chapterNumber)}`:''}</td>
+                <td>${safe(reasons[report.reason]||report.reason)}</td><td>${safe(report.details||'—')}</td>
+                <td>${safe(report.status)}</td><td>${report.createdAt?safe(new Date(report.createdAt).toLocaleString('vi')):'—'}</td>
+                <td>${report.status==='OPEN'?`<button class="action" type="button" data-resolve-report="${Number(report.id)}">Đã xử lý</button>`:'—'}</td></tr>`;
+        }).join(''):'<tr><td colspan="7" class="empty">Chưa có báo cáo nội dung.</td></tr>';
+    }
+
     async function load() {
         showPageError('');
         try {
-            const [bookResponse, summaryResponse, commentResponse] = await Promise.all([
-                api(API), api('/api/admin/summary'), api('/api/admin/comments')
+            const [bookResponse, summaryResponse, commentResponse, reportResponse] = await Promise.all([
+                api(API), api('/api/admin/summary'), api('/api/admin/comments'), api('/api/admin/reports')
             ]);
             books = await json(bookResponse);
             const summary = await json(summaryResponse);
             comments = await json(commentResponse);
+            reports = await json(reportResponse);
             $('bookCount').textContent = Number(summary.books || 0).toLocaleString('vi');
             $('chapterCount').textContent = Number(summary.chapters || 0).toLocaleString('vi');
             $('commentCount').textContent = Number(summary.comments || 0).toLocaleString('vi');
             $('viewCount').textContent = Number(summary.views || 0).toLocaleString('vi');
             renderBooks();
             renderComments();
+            renderReports();
         } catch (error) {
             showPageError(error.message || 'Không thể tải dữ liệu quản trị.');
             console.error('Lỗi tải trang quản trị:', error);
@@ -412,6 +431,15 @@
         } catch (error) {
             toast(error.message, true);
         }
+    });
+    $('reportTable').addEventListener('click',async event=>{
+        const button=event.target.closest('[data-resolve-report]');
+        if(!button)return;
+        try {
+            await json(await api(`/api/admin/reports/${Number(button.dataset.resolveReport)}/resolve`,{method:'POST'}));
+            toast('Đã cập nhật trạng thái báo cáo.');
+            await load();
+        } catch(error) { toast(error.message,true); }
     });
 
     async function initialize() {

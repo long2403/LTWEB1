@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/reports/**").authenticated()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/me/**").authenticated()

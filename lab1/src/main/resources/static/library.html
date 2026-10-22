@@ -28,6 +28,7 @@
         .notification{display:flex;justify-content:space-between;gap:14px;padding:16px;background:white;border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
         .notification.unread{border-left:4px solid var(--accent);background:#fafdff}
         .notification p{margin:0 0 5px}.notification small{color:var(--muted)}.notification button{background:none;color:var(--accent);font-weight:700}
+        .collection-group{margin-bottom:24px}.collection-group h2{font:700 21px "Playfair Display",serif}.achievement{padding:16px;background:#fff;border:1px solid var(--line);border-radius:10px}.achievement.locked{opacity:.65}.achievement strong{display:block}.achievement progress{width:100%;height:9px;margin-top:10px;accent-color:var(--accent)}
         @media(max-width:600px){main{margin:25px auto}h1{font-size:29px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cover{height:180px}}
     </style>
 </head>
@@ -41,10 +42,14 @@
     <nav class="tabs" aria-label="Tủ sách">
         <button class="tab active" data-panel="following">Đang theo dõi</button>
         <button class="tab" data-panel="history">Lịch sử đọc</button>
+        <button class="tab" data-panel="collections">Danh sách riêng</button>
+        <button class="tab" data-panel="achievements">Thành tích</button>
         <button class="tab" data-panel="notifications">Thông báo <span id="unreadCount"></span></button>
     </nav>
     <section class="panel active" id="following"><div class="grid" id="followGrid"></div></section>
     <section class="panel" id="history"><div class="grid" id="historyGrid"></div></section>
+    <section class="panel" id="collections"><div id="collectionList"></div></section>
+    <section class="panel" id="achievements"><div class="grid" id="achievementGrid"></div></section>
     <section class="panel" id="notifications"><div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="action" id="readAll" style="flex:0 0 auto">Đánh dấu đã đọc</button></div><div id="notificationList"></div></section>
 </main>
 <script src="/story-covers.js"></script>
@@ -86,20 +91,46 @@
                 ${item.read ? '' : `<button type="button" data-read="${Number(item.id)}">Đã đọc</button>`}
             </article>`).join('') : '<div class="empty">Chưa có thông báo. Truyện mới và phản hồi sẽ xuất hiện ở đây.</div>';
     }
+    function renderCollections(entries, books) {
+        const byId=new Map(books.map(book=>[Number(book.id),book]));
+        const groups=new Map();
+        entries.forEach(entry=>{
+            const book=byId.get(Number(entry.bookId));
+            if(!book)return;
+            if(!groups.has(entry.collectionName))groups.set(entry.collectionName,[]);
+            groups.get(entry.collectionName).push({...book,collectionEntryId:entry.id});
+        });
+        $('collectionList').innerHTML=groups.size?[...groups.entries()].map(([name,items])=>`
+            <section class="collection-group"><h2>${safe(name)}</h2><div class="grid">${items.map(item=>`
+                <article class="book"><a href="/book.html?id=${Number(item.id)}"><div class="cover"><img src="${safe(cover(item.coverUrl,item.title))}" alt="Bìa ${safe(item.title)}" loading="lazy" onerror="this.onerror=null;this.src='/book-placeholder.svg'"></div></a>
+                <div class="body"><h2>${safe(item.title)}</h2><div class="actions"><a class="action" href="/book.html?id=${Number(item.id)}">Đọc truyện</a><button class="action" type="button" data-remove-collection="${Number(item.collectionEntryId)}">Bỏ khỏi danh sách</button></div></div></article>
+            `).join('')}</div></section>`).join(''):'<div class="empty">Chưa có danh sách riêng. Mở chi tiết truyện và chọn “Danh sách riêng” để thêm truyện.</div>';
+    }
+    function renderAchievements(items) {
+        $('achievementGrid').innerHTML=items.map(item=>`
+            <article class="achievement ${item.unlocked?'':'locked'}"><strong>${item.unlocked?'🏅':'🔒'} ${safe(item.title)}</strong>
+            <div class="muted">${safe(item.description)}</div><progress max="${Number(item.target)}" value="${Math.min(Number(item.progress),Number(item.target))}"></progress>
+            <div class="muted">${Math.min(Number(item.progress),Number(item.target))}/${Number(item.target)} ${item.unlocked?'· Đã mở khóa':''}</div></article>
+        `).join('');
+    }
     async function initialize() {
         try {
             const account = await json(await fetch('/api/auth/me'));
             if (!account.authenticated) { location.replace('/login.html?return=%2Flibrary.html'); return; }
-            const [favs, history, books, notifications] = await Promise.all([
+            const [favs, history, books, notifications, collections, achievements] = await Promise.all([
                 fetch('/api/me/favorites').then(json),
                 fetch('/api/me/history').then(json),
                 fetch('/api/books').then(json),
-                fetch('/api/me/notifications').then(json)
+                fetch('/api/me/notifications').then(json),
+                fetch('/api/me/collections').then(json),
+                fetch('/api/me/achievements').then(json)
             ]);
             const byId = new Map(books.map(book => [Number(book.id), book]));
             renderBooks($('followGrid'), favs.map(id => byId.get(Number(id))).filter(Boolean));
             renderBooks($('historyGrid'), history.map(item => ({...byId.get(Number(item.bookId)), chapterNumber:item.chapterNumber})).filter(item => item.id), true);
             renderNotifications(notifications);
+            renderCollections(collections,books);
+            renderAchievements(achievements);
             if (location.hash === '#notifications') document.querySelector('[data-panel="notifications"]').click();
         } catch (error) {
             $('pageMessage').textContent = error.message || 'Không tải được tủ sách.';
@@ -117,6 +148,14 @@
             await json(await request(`/api/me/notifications/${Number(button.dataset.read)}/read`, {method:'POST'}));
             await initialize();
         } catch (error) { $('pageMessage').textContent = error.message; $('pageMessage').hidden = false; }
+    });
+    $('collectionList').addEventListener('click',async event=>{
+        const button=event.target.closest('[data-remove-collection]');
+        if(!button)return;
+        try {
+            await json(await request(`/api/me/collections/${Number(button.dataset.removeCollection)}`,{method:'DELETE'}));
+            await initialize();
+        } catch(error) { $('pageMessage').textContent=error.message; $('pageMessage').hidden=false; }
     });
     $('readAll').addEventListener('click', async () => {
         try { await json(await request('/api/me/notifications/read-all', {method:'POST'})); await initialize(); }
