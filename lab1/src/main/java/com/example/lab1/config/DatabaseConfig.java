@@ -16,7 +16,11 @@ public class DatabaseConfig {
 
     @Bean
     @Primary
-    public DataSource dataSource(@Value("${DATABASE_URL:}") String databaseUrl) {
+    public DataSource dataSource(
+        @Value("${DATABASE_URL:}") String databaseUrl,
+        @Value("${DATABASE_USERNAME:}") String databaseUsername,
+        @Value("${DATABASE_PASSWORD:}") String databasePassword
+    ) {
 
         if (databaseUrl == null || databaseUrl.isBlank()) {
             throw new IllegalStateException("DATABASE_URL environment variable is missing");
@@ -24,7 +28,16 @@ public class DatabaseConfig {
 
         try {
             if (databaseUrl.startsWith("jdbc:")) {
-                return DataSourceBuilder.create().url(databaseUrl).build();
+                DataSourceBuilder<?> builder = DataSourceBuilder.create()
+                    .url(databaseUrl)
+                    .driverClassName("org.postgresql.Driver");
+                if (!databaseUsername.isBlank()) {
+                    builder.username(databaseUsername);
+                }
+                if (!databasePassword.isBlank()) {
+                    builder.password(databasePassword);
+                }
+                return builder.build();
             }
             URI uri = new URI(databaseUrl);
             String userInfo = uri.getUserInfo();

@@ -1,0 +1,9 @@
+.git
+.github
+.env
+.env.*
+lab1/target
+lab1/data
+lab1/SQLdata
+target
+*.pem
